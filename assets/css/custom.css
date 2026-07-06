@@ -1,0 +1,137 @@
+:root {
+    --template1: #5F5C5D; /* Botões, links e titulos de telas e fundos de tela inicial */
+    --template2: #989596; /* Hover do Menu */
+    --template3: #6F6C6D; /* Hover do botoes */
+    --template4: #232526; /* Cor do Fundo da tela de login*/
+}
+
+.field-icon {
+  float: right;
+  margin-left: -25px;
+  margin-top: -25px;
+  position: relative;
+  z-index: 2;
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+#mensagem-recuperar{
+  color: var(--template1) !important;
+  font-size: 13px;
+
+}
+
+.select2-selection__rendered {
+    line-height: 35px !important;
+    border: 1px solid #e3e3e3;
+}
+.select2-container .select2-selection--single {
+    height: 39px !important;
+}
+.select2-selection__arrow {
+    height: 38px !important;
+}
+
+
+hr.separador {
+  border: 1px dotted #666;
+  border-radius: 5px;
+}
+
+.select2-selection__rendered {
+    line-height: 35px !important;
+}
+.select2-container .select2-selection--single {
+    height: 39px !important;
+}
+.select2-selection__arrow {
+    height: 38px !important;
+}
+hr.separador {
+  border: 1px dotted #666;
+  border-radius: 5px;
+}
+.text-verde{
+  color:#0e9e29;
+}
+.ocultar{
+  display:none;
+}
+
+.textareag{
+    width:1000px;
+    height:550px;
+}
+
+.textareah{
+    width:765px;
+    height:550px;
+}
+
+.side-menu .slide .side-menu__item:hover {
+    background-color: var(--template2);
+
+}
+
+.main-sidemenu {
+    background-color: #232526;  /* Cor Menu Lateral */
+}
+
+.app-sidebar {
+    background-color: #232526;
+}
+
+.slide-menu {
+    border-left: 4px solid var(--template1);         /* cor da aba interna slide-menu */
+    background-color: #322d2d !important;        /* Cor da aba interna do slide menu  */
+    color: #ffffff;
+}
+
+.side-menu__item a{
+    background-color: var(--template2);
+    color: #ffffff;
+}
+
+.side-menu__item:hover .side-menu__icon,
+.side-menu__item:hover .side-menu__label,
+.side-menu__item:hover .angle {
+    color: #ffffff !important;
+    fill: #ffffff !important;
+
+}
+
+.slide-item.active,
+.slide-item:hover,
+.slide-item:focus {
+    text-decoration: none;
+    color: var(--template1) !important;
+
+}
+
+.app-sidebar .side-item.side-item-category {
+    color: #7660a7;
+}
+.main-sidebar-header {
+    background: #232526 !important;      /* Muda a cor da parte superior logo */
+}
+.main-header {
+    background-color: #232526 !important;     /* Muda a cor da parte superior */
+}
+.slide-item .app-sidebar .slide-menu .slide-item:before:hover {
+    color: var(--template1) !important;
+}
+.slide.is-expanded .slide-menu a:hover:before {
+   color: var(--template1) !important;
+}
+.slide:hover .side-menu__label,
+.slide:hover .angle {
+    color: #fff !important;
+    fill: #fff !important;
+}
+.header-icon-svgs {
+    color: #ffffff;
+    fill: #ffffff;
+}
+.font-size-11{
+    font-size: 11px !important;
+}
