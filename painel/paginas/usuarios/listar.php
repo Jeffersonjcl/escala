@@ -2,7 +2,7 @@
 $tabela = 'usuarios';
 require_once("../../../conexao.php");
 
-$query = $pdo->query("SELECT * from $tabela where nivel != 'Cliente' and nivel != 'Administrador' order by nome asc");
+$query = $pdo->query("SELECT * from $tabela where nivel != 'Policial' and nivel != 'Administrador' order by nome asc");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if ($linhas > 0) {

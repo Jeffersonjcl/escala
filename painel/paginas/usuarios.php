@@ -77,16 +77,10 @@ if (@$usuarios == 'ocultar') {
 						<div class="col-md-6 col-6">
 							<label>Nível</label>
 							<select class="form-select" name="nivel" id="nivel">
-								<option value="">Selecione o Cargo</option>
-								<?php
-								$query = $pdo->query("SELECT * from cargos order by id asc");
-								$res = $query->fetchAll(PDO::FETCH_ASSOC);
-								$linhas = @count($res);
-								if ($linhas > 0) {
-									for ($i = 0; $i < $linhas; $i++) { ?>
-										<option value="<?php echo $res[$i]['nome'] ?>"><?php echo $res[$i]['nome'] ?></option>
-								<?php }
-								} ?>
+								<option value="">Selecione o Nível</option>
+								<option value="Administrador">Administrador</option>
+								<option value="Escalante">Escalante (P4)</option>
+								<option value="Comandante">Comandante</option>
 							</select>
 						</div>
 
