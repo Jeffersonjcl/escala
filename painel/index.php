@@ -205,136 +205,49 @@ if ($linhas > 0) {
                                         </a>
                                     </li>
 
-                                    <li class="dropdown nav-item  main-header-message <?php echo $receber ?>">
+                                    <li class="dropdown nav-item  main-header-message <?php echo @$escalas_listagem ?>">
 
                                         <?php
-                                        //contas a receber vencidas	
-                                        $query = $pdo->query("SELECT * from receber where data_venc < curDate() and pago = 'Não' ");
+                                        //escalas publicadas pendentes de assinatura
+                                        $query = $pdo->query("SELECT * from escalas_diarias where status = 'Publicada' and (assinado_escalante = 0 or assinado_comandante = 0) order by data_escala asc");
                                         $res = $query->fetchAll(PDO::FETCH_ASSOC);
-                                        $receber_vencidas = @count($res);
+                                        $escalas_pendentes = @count($res);
                                         ?>
 
-
-                                        <a class="new nav-link " data-bs-toggle="dropdown" href="receber">
-                                            <small><i class="fa fa-dollar" style="color: white"></i></small>
-                                            <span class="badge  header-badge" style="background:green"><?php echo $receber_vencidas ?></span>
+                                        <a class="new nav-link " data-bs-toggle="dropdown" href="escalas_listagem">
+                                            <small><i class="fa fa-signature" style="color: white"></i></small>
+                                            <span class="badge  header-badge" style="background:red"><?php echo $escalas_pendentes ?></span>
                                         </a>
-
-
 
                                         <div class="dropdown-menu">
                                             <div class="menu-header-content text-start border-bottom">
                                                 <div class="d-flex">
-                                                    <h6 class="dropdown-title mb-1 tx-15 font-weight-semibold">Contas à Receber</h6>
-
+                                                    <h6 class="dropdown-title mb-1 tx-15 font-weight-semibold">Escalas Pendentes de Assinatura</h6>
                                                 </div>
-                                                <p class="dropdown-title-text subtext mb-0 op-6 pb-0 tx-12 "><?php echo $receber_vencidas ?> Contas à Receber Vencidas</p>
+                                                <p class="dropdown-title-text subtext mb-0 op-6 pb-0 tx-12 "><?php echo $escalas_pendentes ?> Escala(s) aguardando assinatura</p>
                                             </div>
-
 
                                             <div class="main-message-list chat-scroll">
-
                                                 <?php
-                                                $query = $pdo->query("SELECT * from receber where data_venc < curDate() and pago = 'Não' order by data_venc asc");
-                                                $res = $query->fetchAll(PDO::FETCH_ASSOC);
-                                                $receber_vencidas = @count($res);
-                                                if ($receber_vencidas > 0) {
-                                                    for ($i = 0; $i < $receber_vencidas; $i++) {
-                                                        $valor_conta = $res[$i]['valor'];
-                                                        $descricao_conta = $res[$i]['descricao'];
-                                                        $data_venc = $res[$i]['data_venc'];
-                                                        $valor_contaF = number_format($valor_conta, 2, ',', '.');
-                                                        $data_vencF = implode('/', array_reverse(@explode('-', $data_venc)));
+                                                if ($escalas_pendentes > 0) {
+                                                    foreach ($res as $e) {
+                                                        $data_vencF = implode('/', array_reverse(explode('-', $e['data_escala'])));
                                                 ?>
-
-                                                        <a href="receber" class="dropdown-item d-flex border-bottom">
-
+                                                        <a href="escalas_listagem" class="dropdown-item d-flex border-bottom">
                                                             <div class="wd-90p">
                                                                 <div class="d-flex">
-                                                                    <h5 class="mb-0 name" style="color:green">R$ <?php echo $valor_contaF ?></h5>
+                                                                    <h5 class="mb-0 name" style="color:red">Turno <?php echo $e['turno'] ?></h5>
                                                                 </div>
-                                                                <p class="mb-0 desc"><?php echo $res[$i]['descricao'] ?></p>
+                                                                <p class="mb-0 desc"><?php echo $e['assinado_escalante'] ? 'Falta assinatura do Comandante' : 'Falta assinatura do Escalante' ?></p>
                                                                 <p class="time mb-0 text-start float-start ms-2"><?php echo $data_vencF ?></p>
                                                             </div>
                                                         </a>
-
                                                 <?php }
                                                 }
                                                 ?>
-
                                             </div>
                                             <div class="text-center dropdown-footer">
-                                                <a class="btn btn-success btn-sm btn-block text-center" href="receber">Ver Todas</a>
-                                            </div>
-                                        </div>
-                                    </li>
-
-
-
-
-
-                                    <li class="dropdown nav-item  main-header-message <?php echo $pagar ?>">
-
-                                        <?php
-                                        //contas a pagar vencidas							
-                                        $query = $pdo->query("SELECT * from pagar where data_venc < curDate() and pago = 'Não' ");
-                                        $res = $query->fetchAll(PDO::FETCH_ASSOC);
-                                        $pagar_vencidas = @count($res);
-                                        ?>
-
-                                        <a class="new nav-link " data-bs-toggle="dropdown" href="pagar">
-                                            <small><i class="fa fa-dollar" style="color: white"></i></small>
-                                            <span class="badge  header-badge" style="background:red"><?php echo $pagar_vencidas ?></span>
-                                        </a>
-
-
-
-                                        <div class="dropdown-menu">
-                                            <div class="menu-header-content text-start border-bottom">
-                                                <div class="d-flex">
-                                                    <h6 class="dropdown-title mb-1 tx-15 font-weight-semibold">Contas à Pagar</h6>
-
-                                                </div>
-                                                <p class="dropdown-title-text subtext mb-0 op-6 pb-0 tx-12 "><?php echo $pagar_vencidas ?> Contas à Pagar Vencidas</p>
-                                            </div>
-
-
-                                            <div class="main-message-list Notification-scroll">
-
-                                                <?php
-                                                $query = $pdo->query("SELECT * from pagar where data_venc < curDate() and pago = 'Não' order by data_venc asc");
-                                                $res = $query->fetchAll(PDO::FETCH_ASSOC);
-                                                $pagar_vencidas = @count($res);
-                                                if ($pagar_vencidas > 0) {
-                                                    for ($i = 0; $i < $pagar_vencidas; $i++) {
-                                                        $valor_conta = $res[$i]['valor'];
-                                                        $descricao_conta = $res[$i]['descricao'];
-                                                        $data_venc = $res[$i]['data_venc'];
-                                                        $valor_contaF = number_format($valor_conta, 2, ',', '.');
-                                                        $data_vencF = implode('/', array_reverse(@explode('-', $data_venc)));
-                                                ?>
-
-
-
-                                                        <a href="pagar" class="dropdown-item d-flex border-bottom">
-
-                                                            <div class="wd-90p">
-                                                                <div class="d-flex">
-                                                                    <h5 class="mb-0 name" style="color:red">R$ <?php echo $valor_contaF ?></h5>
-                                                                </div>
-                                                                <p class="mb-0 desc"><?php echo $res[$i]['descricao'] ?></p>
-                                                                <p class="time mb-0 text-start float-start ms-2"><?php echo $data_vencF ?></p>
-                                                            </div>
-                                                        </a>
-
-
-                                                <?php }
-                                                }
-                                                ?>
-
-                                            </div>
-                                            <div class="text-center dropdown-footer">
-                                                <a class="btn btn-success btn-sm btn-block text-center" href="pagar">Ver Todas</a>
+                                                <a class="btn btn-success btn-sm btn-block text-center" href="escalas_listagem">Ver Todas</a>
                                             </div>
                                         </div>
                                     </li>
@@ -402,73 +315,44 @@ if ($linhas > 0) {
                             </li>
 
 
-                            <li class="slide <?php echo @$menu_pessoas ?>">
+                            <li class="slide <?php echo @$menu_efetivo ?>">
                                 <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0);"><i class="fa fa-users text-white mt-1"></i>
-                                    <span class="side-menu__label" style="margin-left: 15px">Pessoas</span><i class="angle fe fe-chevron-right"></i></a>
+                                    <span class="side-menu__label" style="margin-left: 15px">Efetivo</span><i class="angle fe fe-chevron-right"></i></a>
                                 <ul class="slide-menu">
 
-                                    <li class="<?php echo @$clientes ?>"><a class="slide-item" href="clientes"> Clientes</a></li>
+                                    <li class="<?php echo @$policiais ?>"><a class="slide-item" href="policiais"> Policiais</a></li>
 
-                                    <li class="<?php echo @$funcionarios ?>"><a class="slide-item" href="funcionarios"> Funcionários</a></li>
-
-                                    <li class="<?php echo @$usuarios ?>"><a class="slide-item" href="usuarios"> Usuários</a></li>
-
-                                    <li class="<?php echo @$fornecedores ?>"><a class="slide-item" href="fornecedores"> Fornecedores</a></li>
+                                    <li class="<?php echo @$funcoes ?>"><a class="slide-item" href="funcoes"> Funções</a></li>
 
                                 </ul>
                             </li>
 
 
-                            <li class="slide <?php echo @$menu_cadastros ?>">
-                                <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0);"><i class="fa fa-floppy-disk text-white mt-1"></i>
-                                    <span class="side-menu__label" style="margin-left: 15px">Cadastros</span><i class="angle fe fe-chevron-right"></i></a>
+                            <li class="slide <?php echo @$menu_escala ?>">
+                                <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0);"><i class="fa fa-calendar-days text-white mt-1"></i>
+                                    <span class="side-menu__label" style="margin-left: 15px">Escala</span><i class="angle fe fe-chevron-right"></i></a>
                                 <ul class="slide-menu">
 
-                                    <li class="<?php echo @$cargos ?>"><a class="slide-item" href="cargos"> Cargos</a></li>
+                                    <li class="<?php echo @$escalas ?>"><a class="slide-item" href="escalas"> Criar Escala</a></li>
 
-                                    <li class="<?php echo @$frequencias ?>"><a class="slide-item" href="frequencias"> Frequências</a></li>
+                                    <li class="<?php echo @$escalas_listagem ?>"><a class="slide-item" href="escalas_listagem"> Consulta Mensal</a></li>
 
-                                    <li class="<?php echo @$formas_pgto ?>"><a class="slide-item" href="formas_pgto">Formas de Pgto</a></li>
+                                </ul>
+                            </li>
+
+
+                            <li class="slide <?php echo @$menu_administracao ?>">
+                                <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0);"><i class="fa fa-gear text-white mt-1"></i>
+                                    <span class="side-menu__label" style="margin-left: 15px">Administração</span><i class="angle fe fe-chevron-right"></i></a>
+                                <ul class="slide-menu">
+
+                                    <li class="<?php echo @$usuarios ?>"><a class="slide-item" href="usuarios"> Usuários</a></li>
 
                                     <li class="<?php echo @$grupos ?>"><a class="slide-item" href="grupos"> Grupos de Acessos</a></li>
 
                                     <li class="<?php echo @$acessos ?>"><a class="slide-item" href="acessos"> Acessos</a></li>
 
                                 </ul>
-                            </li>
-
-
-                            <li class="slide <?php echo @$menu_financeiro ?>">
-                                <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0);"><i class="fa fa-dollar text-white mt-1"></i>
-                                    <span class="side-menu__label" style="margin-left: 15px">Financeiro</span><i class="angle fe fe-chevron-right"></i></a>
-                                <ul class="slide-menu">
-
-                                    <li class="<?php echo @$pagar ?>"><a class="slide-item" href="pagar"> Despesas / Saidas</a></li>
-
-                                    <li class="<?php echo @$receber ?>"><a class="slide-item" href="receber">Contas á Receber</a></li>
-
-                                    <li class="<?php echo @$rel_financeiro ?>"><a class="slide-item" href="" data-bs-toggle="modal" data-bs-target="#modalRelFin"> Relatório Financeiro</a></li>
-
-                                    <li class="<?php echo @$rel_balanco ?> "><a class="slide-item" href="rel/balanco_anual_class.php" target="_blank"> Rel Balanço Anual</a></li>
-
-                                </ul>
-                            </li>
-
-
-                            <li class="slide <?php echo @$notas ?>">
-                                <a class="side-menu__item" data-bs-toggle="slide" href="notas"><i class="fa fa-file-lines text-white mt-1"></i>
-                                    <span class="side-menu__label" style="margin-left: 15px">Notas Clientes</span></a>
-
-                            </li>
-
-
-                            <li class="slide <?php echo @$minhas_comissoes ?>">
-                                <?php if ($nivel_usuario == 'Mecânico' || $nivel_usuario == 'Administrador') { ?>
-
-                                    <a class="side-menu__item" data-bs-toggle="slide" href="minhas_comissoes"><i class="fa fa-circle-dollar-to-slot text-white mt-1"></i>
-                                        <span class="side-menu__label" style="margin-left: 15px">Minhas Comissões</span></a>
-
-                                <?php } ?>
                             </li>
 
                         </ul>
@@ -882,108 +766,6 @@ if ($linhas > 0) {
 
 
 
-
-<!-- Modal Rel Financeiro -->
-<div class="modal fade" id="modalRelFin" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h4 class="modal-title" id="exampleModalLabel">Relatório Financeiro</h4>
-                <button id="btn-fechar-rel" aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"><span class="text-white" aria-hidden="true">&times;</span></button>
-            </div>
-            <form method="POST" action="rel/financeiro_class" target="_blank">
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-4 col-6 mb-2">
-                            <label>Data Inicial</label>
-                            <input type="date" name="dataInicial" class="form-control" value="<?php echo $data_atual ?>">
-                        </div>
-
-                        <div class="col-md-4 col-6 mb-2">
-                            <label>Data Final</label>
-                            <input type="date" name="dataFinal" class="form-control" value="<?php echo $data_atual ?>">
-                        </div>
-
-                        <div class="col-md-4 col-6 mb-2">
-                            <label>Filtro Data</label>
-                            <select name="filtro_data" class="form-select">
-                                <option value="data_lanc">Data de Lançamento</option>
-                                <option value="data_venc">Data de Vencimento</option>
-                                <option value="data_pgto">Data de Pagamento</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-4 col-6">
-                            <label>Entradas / Saídas</label>
-                            <select name="filtro_tipo" class="form-select">
-                                <option value="receber">Entradas / Ganhos</option>
-                                <option value="pagar">Saídas / Despesas</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-4 col-6">
-                            <label>Tipo Lançamento</label>
-                            <select name="filtro_lancamento" class="form-select">
-                                <option value="">Tudo</option>
-                                <option value="Conta">Ganhos / Despesas</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4 col-6">
-                            <label>Pendentes / Pago</label>
-                            <select name="filtro_pendentes" class="form-select">
-                                <option value="">Tudo</option>
-                                <option value="Não">Pendentes</option>
-                                <option value="Sim">Pago</option>
-                            </select>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-success">Gerar</button>
-                </div>
-
-            </form>
-        </div>
-    </div>
-</div>
-
-
-
-<!-- Modal Rel Lucro -->
-<div class="modal fade" id="modalRelLucro" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog ">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h4 class="modal-title" id="exampleModalLabel">Relatório de Lucro</h4>
-                <button id="btn-fechar-rel" aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"><span class="text-white" aria-hidden="true">&times;</span></button>
-            </div>
-            <form method="POST" action="rel/lucro_class" target="_blank">
-                <div class="modal-body">
-
-                    <div class="row">
-
-                        <div class="col-md-6 col-6">
-                            <label>Data Inicial</label>
-                            <input type="date" name="dataInicial" class="form-control" value="<?php echo $data_atual ?>">
-                        </div>
-
-                        <div class="col-md-6 col-6">
-                            <label>Data Final</label>
-                            <input type="date" name="dataFinal" class="form-control" value="<?php echo $data_atual ?>">
-                        </div>
-
-                    </div>
-
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-success">Gerar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
 
 <!-- SweetAlert JS -->
