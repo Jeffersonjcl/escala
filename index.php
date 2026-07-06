@@ -12,104 +12,6 @@ if ($linhas == 0){
 	$pdo->query("INSERT INTO usuarios SET nome = '$nome_sistema', email = '$email_sistema', senha = '$senha', senha_crip = '$senha_crip', nivel = 'Administrador', ativo = 'Sim', foto = 'sem-foto.jpg', telefone = '(85)99985-5584', endereco = '$endereco_sistema', data = curDate()");
 }
 
-$data_atual = date('Y-m-d');
-
-//percorrer as contas para gerar as cobranças
-if(@$cobranca_auto == 'Sim' and strtotime(@$data_cobranca) != strtotime(@$data_atual) and @$api_whatsapp == 'Sim'){
-
-
-	$query = $pdo->query("SELECT * from receber where data_venc <= curDate() and pago = 'Não' and cliente > 0 order by id asc ");
-	$res = $query->fetchAll(PDO::FETCH_ASSOC);
-	$total_reg = @count($res);
-	if($total_reg > 0){
-		for($i=0; $i < $total_reg; $i++){
-			$descricao = $res[$i]['descricao'];
-			$cliente = $res[$i]['cliente'];
-			$valor = $res[$i]['valor'];			
-			$data_venc = $res[$i]['data_venc'];
-
-			$data_vencF = implode('/', array_reverse(explode('-', $data_venc)));
-			$valorF = number_format($valor, 2, ',', '.');
-
-			$query2 = $pdo->query("SELECT * FROM clientes where id = '$cliente'");
-			$res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
-			if(@count($res2) > 0){
-				$nome_cliente = $res2[0]['nome'];				
-				$tel_cliente = $res2[0]['telefone'];
-			}
-
-			if(strtotime($data_venc) == strtotime($data_atual)){
-				$mensagem = '🏷 _Você tem uma conta à Pagar Hoje_ %0A%0A';
-			}else{
-				$mensagem = '🏷 _Você tem uma conta Vencida_ %0A%0A';
-			}
-
-
-			//api whats			
-				$telefone_envio = '55'.preg_replace('/[ ()-]+/' , '' , $tel_cliente);			
-					
-					$mensagem .= '👗 Empresa: *'.$nome_sistema.'* %0A';
-					$mensagem .= '🪪 Nome: *'.$nome_cliente.'* %0A';
-					$mensagem .= '💵 Valor: *R$ '.$valorF.'* %0A';
-					$mensagem .= '🗓 Data de Vencimento: *'.$data_vencF.'* %0A%0A';
-					$mensagem .= '_Entre em contato conosco para acertar o pagamento!_ %0A';
-
-				require('apis/api_texto.php');
-		}	
-	}
-
-	$pdo->query("UPDATE config SET data_cobranca = curDate()");
-}
-
-
-
-$data_atual = date('Y-m-d');
-//percorrer as contas para gerar as mensagem
-if(@$mensagem_auto == 'Sim' and strtotime(@$data_cobranca) != strtotime(@$data_atual) and @$api_whatsapp == 'Sim'){
-
-	$query = $pdo->query("SELECT * from pagar where data_venc <= curDate() and pago = 'Não' order by id asc ");
-	$res = $query->fetchAll(PDO::FETCH_ASSOC);
-	$total_reg = @count($res);
-	if($total_reg > 0){
-		for($i=0; $i < $total_reg; $i++){
-			$descricao = $res[$i]['descricao'];
-			$valor = $res[$i]['valor'];			
-			$data_venc = $res[$i]['data_venc'];
-
-			$data_vencF = implode('/', array_reverse(explode('-', $data_venc)));
-			$valorF = number_format($valor, 2, ',', '.');
-
-			$query2 = $pdo->query("SELECT * FROM usuarios where nivel = 'Administrador'");
-			$res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
-			if(@count($res2) > 0){
-				$nome = $res2[0]['nome'];
-				$telefone = $res2[0]['telefone'];
-			}
-
-			if(strtotime($data_venc) == strtotime($data_atual)){
-				$mensagem = '🏷 _Você tem uma conta à Pagar Hoje_ %0A%0A';
-				
-			}else{
-				$mensagem = '🏷 _Você tem uma conta Vencida_ %0A%0A';
-			}
-
-
-			//api whats			
-				$telefone_envio = '55'.preg_replace('/[ ()-]+/' , '' , $telefone);			
-					
-					$mensagem .= '👗 Empresa: *'.$nome_sistema.'* %0A';
-					$mensagem .= '💵 Valor: *R$ '.$valorF.'* %0A';
-					$mensagem .= '🗓Data de Vencimento: *'.$data_vencF.'* %0A%0A';
-					$mensagem .= '_Favor efetuar o pagamento!_ %0A';
-
-				require('apis/api_texto.php');
-		}	
-	}
-
-	$pdo->query("UPDATE config SET data_cobranca = curDate()");
-}
-
-
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -122,9 +24,9 @@ if(@$mensagem_auto == 'Sim' and strtotime(@$data_cobranca) != strtotime(@$data_a
 	<meta charset="UTF-8">
 	<meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=0'>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="Description" content="Fluxo Comunicação Inteligente">
-	<meta name="Author" content="Jefferson Lima">
-	<meta name="Keywords" content="fluxo, comunicacao, inteligente, marketing, whatsapp" />
+	<meta name="Description" content="Sistema de Escala Operacional - 1ºPel/1ªCia/1ºBPRAIO">
+	<meta name="Author" content="1º BPRAIO">
+	<meta name="Keywords" content="escala, policia, bpraio, plantao" />
 
 	<!-- TITLE -->
 	<title><?php echo $nome_sistema ?></title>
