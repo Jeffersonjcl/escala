@@ -1,4 +1,5 @@
 <?php
+require_once(__DIR__ . '/../_guard.php');
 require_once("../../../conexao.php");
 @session_start();
 header('Content-Type: application/json; charset=utf-8');

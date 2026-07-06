@@ -1,4 +1,5 @@
 <?php
+require_once(__DIR__ . '/../_guard.php');
 $tabela = 'policiais';
 require_once("../../../conexao.php");
 
