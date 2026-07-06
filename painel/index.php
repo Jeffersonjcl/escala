@@ -72,9 +72,13 @@ if ($linhas > 0) {
     <meta charset="UTF-8">
     <meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=0'>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="Description" content="Fluxo Comunicação Inteligente">
-    <meta name="Author" content="Samuel Lima">
-    <meta name="Keywords" content="fluxo, comunicacao, inteligente, marketing, whatsapp" />
+    <meta name="Description" content="Sistema de Escala Operacional - 1ºPel/1ªCia/1ºBPRAIO">
+    <meta name="Author" content="1º BPRAIO">
+    <meta name="Keywords" content="escala, policia, bpraio, plantao" />
+
+    <!-- Ancora todos os caminhos relativos (css/js/ajax) em painel/, independente
+         da URL "bonita" exibida pelo navegador (ex: painel/funcoes/) -->
+    <base href="<?php echo $url_sistema ?>painel/">
 
     <title><?php echo $nome_sistema ?></title>
 

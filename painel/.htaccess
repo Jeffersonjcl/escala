@@ -3,41 +3,11 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME}\.php -f
 RewriteRule ^(.*)$ $1.php
 
-RewriteRule ^minhas_comissoes(.*)$ index.php?pagina=minhas_comissoes [L]
-
-RewriteRule ^clientes(.*)$ index.php?pagina=clientes [L]
-RewriteRule ^funcionarios(.*)$ index.php?pagina=funcionarios [L]
+RewriteRule ^home(.*)$ index.php?pagina=home [L]
+RewriteRule ^policiais(.*)$ index.php?pagina=policiais [L]
+RewriteRule ^funcoes(.*)$ index.php?pagina=funcoes [L]
+RewriteRule ^escalas(.*)$ index.php?pagina=escalas [L]
+RewriteRule ^escalas_listagem(.*)$ index.php?pagina=escalas_listagem [L]
 RewriteRule ^usuarios(.*)$ index.php?pagina=usuarios [L]
-RewriteRule ^fornecedores(.*)$ index.php?pagina=fornecedores [L]
-
-RewriteRule ^cargos(.*)$ index.php?pagina=cargos [L]
-RewriteRule ^servicos(.*)$ index.php?pagina=servicos [L]
-RewriteRule ^frequencias(.*)$ index.php?pagina=frequencias [L]
-RewriteRule ^formas_pgto(.*)$ index.php?pagina=formas_pgto [L]
 RewriteRule ^grupos(.*)$ index.php?pagina=grupos [L]
 RewriteRule ^acessos(.*)$ index.php?pagina=acessos [L]
-
-RewriteRule ^categorias(.*)$ index.php?pagina=categorias [L]
-RewriteRule ^produtos(.*)$ index.php?pagina=produtos [L]
-RewriteRule ^sub_categorias(.*)$ index.php?pagina=sub_categorias [L]
-RewriteRule ^produtos(.*)$ index.php?pagina=produtos [L]
-RewriteRule ^entradas(.*)$ index.php?pagina=entradas [L]
-RewriteRule ^saidas(.*)$ index.php?pagina=saidas [L]
-RewriteRule ^estoque(.*)$ index.php?pagina=estoque [L]
-
-RewriteRule ^pagar(.*)$ index.php?pagina=pagar [L]
-RewriteRule ^receber(.*)$ index.php?pagina=receber [L]
-RewriteRule ^compras(.*)$ index.php?pagina=compras [L]
-RewriteRule ^caixas(.*)$ index.php?pagina=caixas [L]
-RewriteRule ^estoque(.*)$ index.php?pagina=estoque [L]
-RewriteRule ^lista_vendas(.*)$ index.php?pagina=lista_vendas [L]
-RewriteRule ^comissoes(.*)$ index.php?pagina=comissoes [L]
-
-RewriteRule ^caixas(.*)$ index.php?pagina=caixas [L]
-RewriteRule ^vendas(.*)$ index.php?pagina=vendas [L]
-
-RewriteRule ^notas(.*)$ index.php?pagina=notas [L]
-RewriteRule ^os_tecnico(.*)$ index.php?pagina=os_tecnico [L]
-RewriteRule ^nova_os(.*)$ index.php?pagina=nova_os [L]
-RewriteRule ^os(.*)$ index.php?pagina=os [L]
-RewriteRule ^home(.*)$ index.php?pagina=home [L]

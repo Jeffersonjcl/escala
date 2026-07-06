@@ -57,6 +57,10 @@ if ($linhas > 0) {
 	<meta name="Author" content="1º BPRAIO">
 	<meta name="Keywords" content="escala, policia, bpraio" />
 
+	<!-- Ancora todos os caminhos relativos (css/js/ajax) em painel_policial/, independente
+	     da URL "bonita" exibida pelo navegador -->
+	<base href="<?php echo $url_sistema ?>painel_policial/">
+
 	<title><?php echo $nome_sistema ?></title>
 
 	<link rel="icon" href="../img/icone.png" type="image/x-icon" />
