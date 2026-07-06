@@ -15,11 +15,14 @@ if ($id_usu != "") {
 		$_SESSION['nome'] = $res[0]['nome'];
 		$_SESSION['id'] = $res[0]['id'];
 		$_SESSION['nivel'] = $res[0]['nivel'];
+		$_SESSION['id_ref'] = $res[0]['id_ref'];
+
+		$painel_destino = ($_SESSION['nivel'] == 'Policial') ? 'painel_policial' : 'painel';
 
 		if ($pagina == "") {
-			echo '<script>window.location="painel"</script>';
+			echo '<script>window.location="' . $painel_destino . '"</script>';
 		} else {
-			echo '<script>window.location="painel/' . $pagina . '"</script>';
+			echo '<script>window.location="' . $painel_destino . '/' . $pagina . '"</script>';
 		}
 	} else {
 		echo "<script>localStorage.setItem('id_usu', '')</script>";
@@ -87,8 +90,8 @@ if ($linhas > 0) {
 		echo "<script>localStorage.setItem('id_usu', '')</script>";
 	}
 
-	if ($_SESSION['nivel'] == 'Cliente') {
-		echo '<script>window.location="painel_cliente"</script>';
+	if ($_SESSION['nivel'] == 'Policial') {
+		echo '<script>window.location="painel_policial"</script>';
 	} else {
 		echo '<script>window.location="painel"</script>';
 	}

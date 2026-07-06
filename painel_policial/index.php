@@ -23,7 +23,7 @@ if ($mes_atual == '04' || $mes_atual == '06' || $mes_atual == '09' || $mes_atual
 if (@$_GET['pagina'] != "") {
 	$pagina = @$_GET['pagina'];
 } else {
-	$pagina = 'pagar';
+	$pagina = 'minha-escala';
 }
 
 
@@ -53,9 +53,9 @@ if ($linhas > 0) {
 	<meta charset="UTF-8">
 	<meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=0'>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="Description" content="Fluxo Comunicação Inteligente">
-	<meta name="Author" content="Samuel Lima">
-	<meta name="Keywords" content="fluxo, comunicacao, inteligente, marketing, whatsapp" />
+	<meta name="Description" content="Painel do Policial - Sistema de Escala Operacional">
+	<meta name="Author" content="1º BPRAIO">
+	<meta name="Keywords" content="escala, policia, bpraio" />
 
 	<title><?php echo $nome_sistema ?></title>
 
@@ -186,13 +186,9 @@ if ($linhas > 0) {
 								<path d="M13.293 6.293 7.586 12l5.707 5.707 1.414-1.414L10.414 12l4.293-4.293z" />
 							</svg></div>
 						<ul class="side-menu">
-							
-							<li class="slide ">
-								<a class="side-menu__item" data-bs-toggle="slide" href="index"><i class="fa fa-usd text-white mt-1"></i><span class="side-menu__label" style="margin-left: 15px">Meus Pagamentos</span></a>
-							</li>
 
 							<li class="slide ">
-								<a class="side-menu__item" href="notas"><i class="fa fa-pencil text-white"></i><span class="side-menu__label" style="margin-left: 15px">Envio de Notas</span></a>
+								<a class="side-menu__item" data-bs-toggle="slide" href="index"><i class="fa fa-calendar-days text-white mt-1"></i><span class="side-menu__label" style="margin-left: 15px">Minha Escala</span></a>
 							</li>
 
 						</ul>
@@ -462,135 +458,3 @@ if ($linhas > 0) {
 </script>
 
 
-<script type="text/javascript">
-	$("#form-config").submit(function() {
-
-		event.preventDefault();
-		nicEditors.findEditor('garantia').saveContent();
-		nicEditors.findEditor('termos').saveContent();
-		nicEditors.findEditor('msg_rodape').saveContent();
-
-		var formData = new FormData(this);
-
-		$.ajax({
-			url: "editar-config.php",
-			type: 'POST',
-			data: formData,
-
-			success: function(mensagem) {
-
-				$('#msg-config').text('');
-				$('#msg-config').removeClass()
-				if (mensagem.trim() == "Editado com Sucesso") {
-
-					$('#btn-fechar-config').click();
-					location.reload();
-
-
-				} else {
-
-					$('#msg-config').addClass('text-danger')
-					$('#msg-config').text(mensagem)
-				}
-
-
-			},
-
-			cache: false,
-			contentType: false,
-			processData: false,
-
-		});
-
-	});
-</script>
-
-
-<script type="text/javascript">
-	function carregarImgLogo() {
-		var target = document.getElementById('target-logo');
-		var file = document.querySelector("#foto-logo").files[0];
-
-		var reader = new FileReader();
-
-		reader.onloadend = function() {
-			target.src = reader.result;
-		};
-
-		if (file) {
-			reader.readAsDataURL(file);
-
-		} else {
-			target.src = "";
-		}
-	}
-</script>
-
-
-<script type="text/javascript">
-	function carregarImgLogoRel() {
-		var target = document.getElementById('target-logo-rel');
-		var file = document.querySelector("#foto-logo-rel").files[0];
-
-		var reader = new FileReader();
-
-		reader.onloadend = function() {
-			target.src = reader.result;
-		};
-
-		if (file) {
-			reader.readAsDataURL(file);
-
-		} else {
-			target.src = "";
-		}
-	}
-</script>
-
-
-<script type="text/javascript">
-	function carregarImgIcone() {
-		var target = document.getElementById('target-icone');
-		var file = document.querySelector("#foto-icone").files[0];
-
-		var reader = new FileReader();
-
-		reader.onloadend = function() {
-			target.src = reader.result;
-		};
-
-		if (file) {
-			reader.readAsDataURL(file);
-
-		} else {
-			target.src = "";
-		}
-	}
-</script>
-
-
-<script type="text/javascript">
-	function carregarImgLogoPainel() {
-		var target = document.getElementById('target-logo-painel');
-		var file = document.querySelector("#foto-logo-painel").files[0];
-
-		var reader = new FileReader();
-
-		reader.onloadend = function() {
-			target.src = reader.result;
-		};
-
-		if (file) {
-			reader.readAsDataURL(file);
-
-		} else {
-			target.src = "";
-		}
-	}
-</script>
-
-
-<script src="//js.nicedit.com/nicEdit-latest.js" type="text/javascript"></script>
-<script type="text/javascript">
-	bkLib.onDomLoaded(nicEditors.allTextAreas);
-</script>

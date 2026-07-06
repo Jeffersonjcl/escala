@@ -87,12 +87,5 @@ $query->bindValue(":endereco", "$endereco");
 $query->bindValue(":senha", "$senha");
 $query->execute();
 
-
-$query = $pdo->prepare("UPDATE clientes SET nome = :nome, telefone = :telefone, endereco = :endereco where id = '$id_ref'");
-$query->bindValue(":nome", "$nome");
-$query->bindValue(":telefone", "$telefone");
-$query->bindValue(":endereco", "$endereco");
-$query->execute();
-
 echo 'Editado com Sucesso';
  ?>
