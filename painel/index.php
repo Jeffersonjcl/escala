@@ -3,6 +3,69 @@
 require_once("../conexao.php");
 require_once("verificar.php");
 
+/** @var string $data_atual */
+/** @var string $mes_atual */
+/** @var string $ano_atual */
+/** @var string $data_mes */
+/** @var string $data_ano */
+/** @var string $data_inicio_mes */
+/** @var string $data_inicio_ano */
+/** @var string $data_final_mes */
+/** @var string $bissexto */
+/** @var string $pagina */
+/** @var string $pag_inicial */
+/** @var string $nivel_usuario */
+/** @var string $nome_usuario */
+/** @var string $email_usuario */
+/** @var string $telefone_usuario */
+/** @var string $senha_usuario */
+/** @var string $foto_usuario */
+/** @var string $endereco_usuario */
+/** @var string $id_usuario */
+/** @var string $query */
+/** @var string $res */
+/** @var string $linhas */
+/** @var string $mostrar_preloader */
+/** @var string $nome_sistema */
+/** @var string $url_sistema */
+/** @var string $configuracoes */
+/** @var string $home */
+/** @var string $policiais */
+/** @var string $funcoes */
+/** @var string $escalas */
+/** @var string $escalas_listagem */
+/** @var string $usuarios */
+/** @var string $grupos */
+/** @var string $acessos */
+/** @var string $menu_efetivo */
+/** @var string $menu_escala */
+/** @var string $menu_administracao */
+/** @var string $escalas_pendentes */
+/** @var string $saudacao */
+/** @var string $dataFormatada */
+/** @var string $diaMes */
+/** @var string $diaSemana */
+/** @var string $mes */
+/** @var string $ano */
+/** @var string $nomesDiasDaSemana */
+/** @var string $nomeDosMeses */
+/** @var string $hora */
+/** @var string $url */
+/** @var string $chave_pix */
+/** @var string $mensagem_auto */
+/** @var string $cobranca_auto */
+/** @var string $marca_dagua */
+/** @var string $api_whatsapp */
+/** @var string $token */
+/** @var string $mensagem_whatsapp */
+/** @var string $instancia */
+/** @var string $impressao_automatica */
+/** @var string $fonte_comprovante */
+/** @var string $entrar_automatico */
+
+
+$mostrar_preloader = 'Sim';
+
 $data_atual = date('Y-m-d');
 $mes_atual = Date('m');
 $ano_atual = Date('Y');

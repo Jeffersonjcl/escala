@@ -2,11 +2,13 @@
 //definir fuso horário timezone
 date_default_timezone_set('America/Fortaleza');
 
+/** @var PDO $pdo */
 /** @var string $servidor */
 /** @var string $banco */
 /** @var string $usuario */
 /** @var string $senha */
-/** @var PDO $pdo */
+/** @var string $url_sistema */
+/** @var string $url */
 
 
 //dados conexão bd local
