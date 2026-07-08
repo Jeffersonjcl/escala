@@ -4,10 +4,10 @@
 
 
 :root {
-    --template1: #5F5C5D; /* Botões, links e titulos de telas e fundos de tela inicial */
-    --template2: #989596; /* Hover do Menu */
-    --template3: #6F6C6D; /* Hover do botoes */
-    --template4: #232526; /* Cor do Fundo da tela de login*/
+    --template1: #1a5276; /* Botões, links e titulos de telas e fundos de tela inicial */
+    --template2: #2980b9; /* Hover do Menu */
+    --template3: #2980b9; /* Hover do botoes */
+    --template4: #1a5276; /* Cor do Fundo da tela de login*/
 }
 
 .row {
@@ -1223,13 +1223,13 @@ fieldset:disabled a.btn {
 .btn-primary {
     color: #fff;
     background-color: #000 !important;
-    border-color: #5F5C5D !important;
+    border-color: var(--template1) !important;
 }
 
 .btn-primary:hover {
     color: #000;
     background-color: #fff !important;
-    border-color: #5F5C5D !important;
+    border-color: var(--template1) !important;
 }
 
 .btn-primary:focus,
@@ -4257,9 +4257,9 @@ body {
     font-size: 0.81568rem;
     font-weight: 400;
     line-height: 1.5;
-    color: #4a4a69;
+    color: #2c3e50;
     text-align: left;
-    background-color: rgba(234, 243, 241, 0.2784313725);
+    background-color: #f8f9fa;
 }
 
 [tabindex="-1"]:focus {
@@ -57444,7 +57444,7 @@ button.bg-dark:focus {
 }
 
 .bg-primary {
-    background-color: #5F5C5D !important;  /* Cor do Fundo da tela de login  */
+    background-color: var(--template4) !important;  /* Cor do Fundo da tela de login  */
 }
 
 .bg-primary-gradient {

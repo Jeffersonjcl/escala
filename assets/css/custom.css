@@ -1,8 +1,19 @@
 :root {
-    --template1: #5F5C5D; /* Botões, links e titulos de telas e fundos de tela inicial */
-    --template2: #989596; /* Hover do Menu */
-    --template3: #6F6C6D; /* Hover do botoes */
-    --template4: #232526; /* Cor do Fundo da tela de login*/
+    --cor-principal: #1a5276;
+    --cor-secundaria: #2980b9;
+    --cor-fundo: #f8f9fa;
+    --cor-texto: #2c3e50;
+
+    /* Aliases mantidos para compatibilidade com o tema (usados em style.css/style-dark.css) */
+    --template1: var(--cor-principal); /* Botões, links e titulos de telas e fundos de tela inicial */
+    --template2: var(--cor-secundaria); /* Hover do Menu */
+    --template3: var(--cor-secundaria); /* Hover do botoes */
+    --template4: var(--cor-principal); /* Cor do Fundo da tela de login*/
+}
+
+body {
+    color: var(--cor-texto) !important;
+    background-color: var(--cor-fundo) !important;
 }
 
 .field-icon {
@@ -74,11 +85,11 @@ hr.separador {
 }
 
 .main-sidemenu {
-    background-color: #232526;  /* Cor Menu Lateral */
+    background-color: var(--cor-principal);  /* Cor Menu Lateral */
 }
 
 .app-sidebar {
-    background-color: #232526;
+    background-color: var(--cor-principal);
 }
 
 .slide-menu {
@@ -112,10 +123,10 @@ hr.separador {
     color: #7660a7;
 }
 .main-sidebar-header {
-    background: #232526 !important;      /* Muda a cor da parte superior logo */
+    background: var(--cor-principal) !important;      /* Muda a cor da parte superior logo */
 }
 .main-header {
-    background-color: #232526 !important;     /* Muda a cor da parte superior */
+    background-color: var(--cor-principal) !important;     /* Muda a cor da parte superior */
 }
 .slide-item .app-sidebar .slide-menu .slide-item:before:hover {
     color: var(--template1) !important;

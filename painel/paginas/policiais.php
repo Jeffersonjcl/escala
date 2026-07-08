@@ -40,6 +40,7 @@ $funcoes_cadastradas = $query->fetchAll(PDO::FETCH_ASSOC);
 
 <input type="hidden" id="ids">
 
+
 <!-- Modal Policial -->
 <div class="modal fade" id="modalForm" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
 	<div class="modal-dialog modal-lg">

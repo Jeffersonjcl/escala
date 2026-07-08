@@ -1057,3 +1057,13 @@ if ($linhas > 0) {
 <script type="text/javascript">
     bkLib.onDomLoaded(nicEditors.allTextAreas);
 </script>
+
+<script type="text/javascript">
+    // A tag <base> (ver topo do arquivo) resolve href="#" para a URL base (painel/),
+    // e não para a página atual. Sem isso, clicar em botões de ação (editar/excluir)
+    // que usam href="#" + onclick faz o navegador recarregar painel/ (index.php)
+    // em vez de apenas executar o onclick.
+    $(document).on('click', 'a[href="#"]', function(e) {
+        e.preventDefault();
+    });
+</script>

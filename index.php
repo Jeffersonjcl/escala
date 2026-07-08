@@ -81,7 +81,7 @@ if ($linhas == 0){
 							<!-- Demo content-->
 							<div class="main-card-signin d-md-flex">
 								<div class="wd-100p">
-									<div class="d-flex mb-4 justify-content-center"><img src="img/logo.png" class="sign-favicon" alt="logo" width="90%" oncontextmenu="return false" style="pointer-events: none; border-radius: 10px;"></div>
+									<div class="d-flex mb-4 justify-content-center"><img src="img/logo.png" class="sign-favicon" alt="logo" width="50%" oncontextmenu="return false" style="pointer-events: none; border-radius: 10px;"></div>
 									<div class="">
 										<div class="main-signup-header">
 
