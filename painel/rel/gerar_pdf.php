@@ -43,6 +43,17 @@ foreach ($equipes as $equipe) {
 		$titulo_equipe .= ' - Viatura ' . htmlspecialchars($equipe['viatura']);
 	}
 
+	$info_equipe = [];
+	if (!empty($equipe['horario_inicio']) && !empty($equipe['horario_fim'])) {
+		$info_equipe[] = 'Horário: ' . substr($equipe['horario_inicio'], 0, 5) . ' às ' . substr($equipe['horario_fim'], 0, 5);
+	}
+	if (!empty($equipe['area_atuacao'])) {
+		$info_equipe[] = 'Área de Atuação: ' . htmlspecialchars($equipe['area_atuacao']);
+	}
+	if (count($info_equipe) > 0) {
+		$titulo_equipe .= '<br><span style="font-weight:normal; font-size:11px;">' . implode(' &nbsp;|&nbsp; ', $info_equipe) . '</span>';
+	}
+
 	$linhas_membros = '';
 	foreach ($membros as $m) {
 		$linhas_membros .= '<tr>

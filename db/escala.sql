@@ -73,7 +73,7 @@ INSERT INTO `acessos` (`id`, `nome`, `chave`, `grupo`) VALUES
 (6, 'Policiais', 'policiais', 1),
 (7, 'Funções', 'funcoes', 1),
 (8, 'Criar Escala', 'escalas', 2),
-(9, 'Consulta Mensal', 'escalas_listagem', 2),
+(9, 'Ver Escalas', 'escalas_listagem', 2),
 (10, 'Assinar como Escalante', 'assinar_escalante', 2),
 (11, 'Assinar como Comandante', 'assinar_comandante', 2);
 
@@ -227,7 +227,10 @@ CREATE TABLE `escala_equipes` (
   `id` int(11) NOT NULL,
   `escala_id` int(11) NOT NULL,
   `nome_equipe` varchar(50) NOT NULL,
-  `viatura` varchar(30) DEFAULT NULL
+  `viatura` varchar(30) DEFAULT NULL,
+  `horario_inicio` time DEFAULT NULL,
+  `horario_fim` time DEFAULT NULL,
+  `area_atuacao` varchar(150) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 ALTER TABLE `escala_equipes` ADD PRIMARY KEY (`id`), ADD KEY `fk_equipes_escala` (`escala_id`);

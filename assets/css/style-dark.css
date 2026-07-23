@@ -15,8 +15,8 @@
 }
 
 body.dark-theme {
-    color: #ffffff;
-    background: #14283a;
+    color: #ffffff !important;
+    background: #14283a !important;
 }
 
 @media (max-width: 480px) {

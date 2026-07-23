@@ -402,7 +402,7 @@ if ($linhas > 0) {
 
                                     <li class="<?php echo @$escalas ?>"><a class="slide-item" href="escalas"> Criar Escala</a></li>
 
-                                    <li class="<?php echo @$escalas_listagem ?>"><a class="slide-item" href="escalas_listagem"> Consulta Mensal</a></li>
+                                    <li class="<?php echo @$escalas_listagem ?>"><a class="slide-item" href="escalas_listagem"> Ver Escalas</a></li>
 
                                 </ul>
                             </li>

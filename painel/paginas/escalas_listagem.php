@@ -10,7 +10,7 @@ if (@$escalas_listagem == 'ocultar') {
 
 <div class="breadcrumb-header justify-content-between">
 	<div class="left-content mt-2">
-		<h4 class="mb-0">Consulta Mensal de Escalas</h4>
+		<h4 class="mb-0">Ver Escalas</h4>
 	</div>
 </div>
 

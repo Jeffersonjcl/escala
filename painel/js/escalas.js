@@ -1,62 +1,76 @@
 $(document).ready(function() {
 	if (escalaExistente) {
 		$('#data_escala').val(escalaExistente.escala.data_escala);
-		$('#turno').val(escalaExistente.escala.turno);
 		carregarEfetivoPronto();
 	}
 });
 
 function carregarEfetivoPronto() {
 	var data_escala = $('#data_escala').val();
-	var turno = $('#turno').val();
 
-	if (data_escala == "" || turno == "") {
-		alert('Selecione a Data e o Turno antes de carregar o efetivo!');
+	if (data_escala == "") {
+		alert('Selecione a Data antes de carregar o efetivo!');
 		return;
 	}
 
-	$.ajax({
-		url: 'paginas/escalas/buscar_efetivo_pronto.php',
-		method: 'POST',
-		data: {
-			data_escala,
-			turno,
-			id_escala: idEscalaAtual
-		},
-		dataType: 'json',
-		success: function(res) {
-			efetivoDisponivel = res;
-			$('#painel-equipes').show();
+	var turnos = idEscalaAtual ? [turnoEdicao] : ['A', 'B'];
 
-			if (escalaExistente && $('#lista-equipes').children().length == 0) {
+	var promessas = turnos.map(function(turno) {
+		return $.ajax({
+			url: 'paginas/escalas/buscar_efetivo_pronto.php',
+			method: 'POST',
+			data: {
+				data_escala: data_escala,
+				turno: turno,
+				id_escala: idEscalaAtual
+			},
+			dataType: 'json'
+		}).then(function(res) {
+			efetivoDisponivel[turno] = res;
+		});
+	});
+
+	$.when.apply($, promessas).done(function() {
+		$('#painel-turnos').show();
+		$('#painel-salvar').show();
+
+		turnos.forEach(function(turno) {
+			$('#painel-turno-' + turno).show();
+
+			if (idEscalaAtual && escalaExistente && turno == turnoEdicao && $('#lista-equipes-' + turno).children().length == 0) {
 				escalaExistente.equipes.forEach(function(equipe) {
-					adicionarEquipe(equipe.nome_equipe, equipe.viatura, equipe.membros);
+					adicionarEquipe(turno, equipe.nome_equipe, equipe.viatura, equipe.membros, equipe.horario_inicio, equipe.horario_fim, equipe.area_atuacao);
 				});
-			} else if ($('#lista-equipes').children().length == 0) {
-				adicionarEquipe('Raio 01', '', []);
+			} else if ($('#lista-equipes-' + turno).children().length == 0) {
+				adicionarEquipe(turno, 'Raio 01', '', []);
 			}
 
-			atualizarSelectsPoliciais();
+			atualizarSelectsPoliciais(turno);
+		});
+
+		if (idEscalaAtual) {
+			var outroTurno = turnoEdicao == 'A' ? 'B' : 'A';
+			$('#painel-turno-' + outroTurno).hide();
 		}
 	});
 }
 
-function idsUsados() {
+function idsUsados(turno) {
 	var usados = [];
-	$('.membro-row').each(function() {
+	$('#painel-turno-' + turno + ' .membro-row').each(function() {
 		usados.push(parseInt($(this).data('policial-id')));
 	});
 	return usados;
 }
 
-function montarOptionsPoliciais(equipeDiv) {
-	var usados = idsUsados();
+function montarOptionsPoliciais(turno, equipeDiv) {
+	var usados = idsUsados(turno);
 	var select = equipeDiv.find('.select-policial');
 	var atual = select.val();
 	select.empty();
 	select.append('<option value="">Selecione o Policial</option>');
 
-	efetivoDisponivel.forEach(function(p) {
+	(efetivoDisponivel[turno] || []).forEach(function(p) {
 		if (usados.indexOf(parseInt(p.id)) === -1) {
 			select.append('<option value="' + p.id + '" data-funcao="' + p.funcao_id + '">' + p.nome_guerra + ' - ' + p.funcao_nome + ' (' + p.grupo + ')</option>');
 		}
@@ -75,19 +89,22 @@ function montarOptionsFuncoes(equipeDiv) {
 	});
 }
 
-function atualizarSelectsPoliciais() {
-	$('.equipe-box').each(function() {
-		montarOptionsPoliciais($(this));
+function atualizarSelectsPoliciais(turno) {
+	$('#painel-turno-' + turno + ' .equipe-box').each(function() {
+		montarOptionsPoliciais(turno, $(this));
 	});
 }
 
-function adicionarEquipe(nome, viatura, membros) {
-	equipeContador++;
-	nome = nome || ('Raio ' + String(equipeContador).padStart(2, '0'));
+function adicionarEquipe(turno, nome, viatura, membros, horario_inicio, horario_fim, area_atuacao) {
+	equipeContador[turno]++;
+	nome = nome || ('Raio ' + String(equipeContador[turno]).padStart(2, '0'));
 	viatura = viatura || '';
 	membros = membros || [];
+	horario_inicio = (horario_inicio || '').substring(0, 5);
+	horario_fim = (horario_fim || '').substring(0, 5);
+	area_atuacao = area_atuacao || '';
 
-	var idx = equipeContador;
+	var idx = equipeContador[turno];
 
 	var html = '' +
 		'<div class="card equipe-box mb-3" data-equipe-idx="' + idx + '">' +
@@ -97,6 +114,17 @@ function adicionarEquipe(nome, viatura, membros) {
 		'    <button type="button" class="btn btn-sm btn-outline-danger ms-auto" onclick="removerEquipe(this)"><i class="fa fa-trash-can"></i> Remover Equipe</button>' +
 		'  </div>' +
 		'  <div class="card-body">' +
+		'    <div class="mb-3">' +
+		'      <label class="form-label small mb-1">Horário do Serviço (Início e Final)</label>' +
+		'      <div class="d-flex gap-2">' +
+		'        <input type="time" class="form-control form-control-sm horario-inicio-equipe" value="' + horario_inicio + '">' +
+		'        <input type="time" class="form-control form-control-sm horario-fim-equipe" value="' + horario_fim + '">' +
+		'      </div>' +
+		'    </div>' +
+		'    <div class="mb-3">' +
+		'      <label class="form-label small mb-1">Área de Atuação</label>' +
+		'      <input type="text" class="form-control form-control-sm area-atuacao-equipe" placeholder="Ex: Setor Centro" value="' + area_atuacao + '">' +
+		'    </div>' +
 		'    <table class="table table-sm">' +
 		'      <thead><tr><th>Policial</th><th>Função na Escala</th><th></th></tr></thead>' +
 		'      <tbody class="membros-tbody"></tbody>' +
@@ -111,7 +139,7 @@ function adicionarEquipe(nome, viatura, membros) {
 		'</div>';
 
 	var equipeDiv = $(html);
-	$('#lista-equipes').append(equipeDiv);
+	$('#lista-equipes-' + turno).append(equipeDiv);
 
 	montarOptionsFuncoes(equipeDiv);
 
@@ -119,14 +147,16 @@ function adicionarEquipe(nome, viatura, membros) {
 		inserirLinhaMembro(equipeDiv, m.policial_id, m.nome_guerra, m.funcao_na_escala_id, m.funcao_nome);
 	});
 
-	atualizarSelectsPoliciais();
+	atualizarSelectsPoliciais(turno);
 	validarEquipe(equipeDiv);
 }
 
 function removerEquipe(btn) {
 	if (!confirm('Remover essa equipe e todos os seus membros?')) return;
-	$(btn).closest('.equipe-box').remove();
-	atualizarSelectsPoliciais();
+	var equipeDiv = $(btn).closest('.equipe-box');
+	var turno = equipeDiv.closest('[data-turno-painel]').attr('data-turno-painel');
+	equipeDiv.remove();
+	atualizarSelectsPoliciais(turno);
 }
 
 function inserirLinhaMembro(equipeDiv, policial_id, nome_guerra, funcao_id, funcao_nome) {
@@ -141,6 +171,7 @@ function inserirLinhaMembro(equipeDiv, policial_id, nome_guerra, funcao_id, func
 
 function adicionarMembro(btn) {
 	var equipeDiv = $(btn).closest('.equipe-box');
+	var turno = equipeDiv.closest('[data-turno-painel]').attr('data-turno-painel');
 	var totalAtual = equipeDiv.find('.membro-row').length;
 
 	if (totalAtual >= 5) {
@@ -163,14 +194,15 @@ function adicionarMembro(btn) {
 
 	inserirLinhaMembro(equipeDiv, policial_id, nome_guerra, funcao_id, funcao_nome);
 
-	atualizarSelectsPoliciais();
+	atualizarSelectsPoliciais(turno);
 	validarEquipe(equipeDiv);
 }
 
 function removerMembro(btn) {
 	var equipeDiv = $(btn).closest('.equipe-box');
+	var turno = equipeDiv.closest('[data-turno-painel]').attr('data-turno-painel');
 	$(btn).closest('.membro-row').remove();
-	atualizarSelectsPoliciais();
+	atualizarSelectsPoliciais(turno);
 	validarEquipe(equipeDiv);
 }
 
@@ -189,12 +221,9 @@ function validarEquipe(equipeDiv) {
 	return total >= 4 && total <= 5;
 }
 
-function validarTodasEquipes() {
-	var equipes = $('.equipe-box');
-	if (equipes.length == 0) {
-		alert('Adicione ao menos uma Equipe antes de salvar!');
-		return false;
-	}
+function validarTodasEquipes(turno) {
+	var equipes = $('#lista-equipes-' + turno + ' .equipe-box');
+	if (equipes.length == 0) return true;
 
 	var valido = true;
 	equipes.each(function() {
@@ -205,9 +234,9 @@ function validarTodasEquipes() {
 	return valido;
 }
 
-function montarPayload() {
+function montarPayload(turno) {
 	var equipes = [];
-	$('.equipe-box').each(function() {
+	$('#lista-equipes-' + turno + ' .equipe-box').each(function() {
 		var membros = [];
 		$(this).find('.membro-row').each(function() {
 			membros.push({
@@ -219,33 +248,68 @@ function montarPayload() {
 		equipes.push({
 			nome_equipe: $(this).find('.nome-equipe').val(),
 			viatura: $(this).find('.viatura-equipe').val(),
+			horario_inicio: $(this).find('.horario-inicio-equipe').val(),
+			horario_fim: $(this).find('.horario-fim-equipe').val(),
+			area_atuacao: $(this).find('.area-atuacao-equipe').val(),
 			membros: membros
 		});
 	});
 
 	return {
-		id: idEscalaAtual,
+		id: (idEscalaAtual && turno == turnoEdicao) ? idEscalaAtual : null,
 		data_escala: $('#data_escala').val(),
-		turno: $('#turno').val(),
+		turno: turno,
 		equipes: equipes
 	};
 }
 
 function salvarEscala(statusDesejado) {
-	if (statusDesejado == 'Publicada' && !validarTodasEquipes()) {
-		alert('Existe(m) equipe(s) fora do padrão de 4 a 5 membros. Corrija antes de publicar.');
+	var turnosAtivos = idEscalaAtual ? [turnoEdicao] : ['A', 'B'].filter(function(turno) {
+		return $('#lista-equipes-' + turno + ' .equipe-box').length > 0;
+	});
+
+	if (turnosAtivos.length == 0) {
+		alert('Adicione ao menos uma Equipe em algum Turno antes de salvar!');
 		return;
 	}
 
-	if ($('.equipe-box').length == 0) {
-		alert('Adicione ao menos uma Equipe antes de salvar!');
-		return;
+	if (statusDesejado == 'Publicada') {
+		var algumInvalido = turnosAtivos.some(function(turno) {
+			return !validarTodasEquipes(turno);
+		});
+		if (algumInvalido) {
+			alert('Existe(m) equipe(s) fora do padrão de 4 a 5 membros. Corrija antes de publicar.');
+			return;
+		}
 	}
-
-	var payload = montarPayload();
-	payload.status = statusDesejado;
 
 	$('#mensagem-escala').removeClass('text-danger text-success').text('Salvando...');
+
+	salvarSequencial(turnosAtivos.slice(), statusDesejado, []);
+}
+
+function salvarSequencial(turnos, statusDesejado, resultados) {
+	if (turnos.length == 0) {
+		var sucesso = resultados.every(function(r) {
+			return r.status == 'success';
+		});
+		var texto = resultados.map(function(r) {
+			return 'Turno ' + r.turno + ': ' + r.message;
+		}).join(' | ');
+
+		$('#mensagem-escala').removeClass('text-danger text-success').addClass(sucesso ? 'text-success' : 'text-danger').text(texto);
+
+		if (sucesso) {
+			setTimeout(function() {
+				window.location = 'index.php?pagina=escalas_listagem';
+			}, 1500);
+		}
+		return;
+	}
+
+	var turno = turnos[0];
+	var payload = montarPayload(turno);
+	payload.status = statusDesejado;
 
 	$.ajax({
 		url: 'paginas/escalas/salvar.php',
@@ -255,14 +319,12 @@ function salvarEscala(statusDesejado) {
 		},
 		dataType: 'json',
 		success: function(res) {
-			if (res.status == 'success') {
-				$('#mensagem-escala').addClass('text-success').text(res.message);
-				setTimeout(function() {
-					window.location = 'index.php?pagina=escalas_listagem';
-				}, 1200);
-			} else {
-				$('#mensagem-escala').addClass('text-danger').text(res.message);
-			}
+			resultados.push({
+				turno: turno,
+				status: res.status,
+				message: res.message
+			});
+			salvarSequencial(turnos.slice(1), statusDesejado, resultados);
 		}
 	});
 }

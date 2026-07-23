@@ -56,42 +56,50 @@ if ($id_escala != "") {
 			<div class="card-body">
 
 				<div class="row">
-					<div class="col-md-3 mb-2">
+					<div class="col-md-4 mb-2">
 						<label>Data da Escala</label>
 						<input type="date" class="form-control" id="data_escala" <?php echo $escala_existente ? 'readonly' : '' ?>>
 					</div>
-					<div class="col-md-3 mb-2">
-						<label>Turno</label>
-						<select class="form-select" id="turno" <?php echo $escala_existente ? 'disabled' : '' ?>>
-							<option value="">Selecione</option>
-							<option value="A">Turno A</option>
-							<option value="B">Turno B</option>
-						</select>
-					</div>
-					<div class="col-md-3 mb-2 d-flex align-items-end">
+					<div class="col-md-4 mb-2 d-flex align-items-end">
 						<button type="button" class="btn btn-primary" id="btn-carregar-efetivo" onclick="carregarEfetivoPronto()">
 							<i class="fa fa-magnifying-glass me-1"></i> Carregar Efetivo Pronto
 						</button>
 					</div>
 				</div>
 
-				<hr>
+			</div>
+		</div>
+	</div>
+</div>
 
-				<div id="painel-equipes" style="display:none">
+<div class="row row-sm" id="painel-turnos" style="display:none">
+	<div class="col-lg-6" id="painel-turno-A" data-turno-painel="A">
+		<div class="card custom-card">
+			<div class="card-body">
+				<h5 class="mb-3">Turno A</h5>
+				<button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="adicionarEquipe('A')"><i class="fa fa-plus me-1"></i> Adicionar Equipe</button>
+				<div id="lista-equipes-A"></div>
+			</div>
+		</div>
+	</div>
+	<div class="col-lg-6" id="painel-turno-B" data-turno-painel="B">
+		<div class="card custom-card">
+			<div class="card-body">
+				<h5 class="mb-3">Turno B</h5>
+				<button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="adicionarEquipe('B')"><i class="fa fa-plus me-1"></i> Adicionar Equipe</button>
+				<div id="lista-equipes-B"></div>
+			</div>
+		</div>
+	</div>
+</div>
 
-					<button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="adicionarEquipe()"><i class="fa fa-plus me-1"></i> Adicionar Equipe</button>
-
-					<div id="lista-equipes"></div>
-
-					<hr>
-
-					<div id="mensagem-escala" class="mb-2"></div>
-
-					<button type="button" class="btn btn-secondary" onclick="salvarEscala('Rascunho')"><i class="fa fa-floppy-disk me-1"></i> Salvar Rascunho</button>
-					<button type="button" class="btn btn-success" onclick="salvarEscala('Publicada')"><i class="fa fa-check me-1"></i> Salvar e Publicar</button>
-
-				</div>
-
+<div class="row row-sm" id="painel-salvar" style="display:none">
+	<div class="col-lg-12">
+		<div class="card custom-card">
+			<div class="card-body">
+				<div id="mensagem-escala" class="mb-2"></div>
+				<button type="button" class="btn btn-secondary" onclick="salvarEscala('Rascunho')"><i class="fa fa-floppy-disk me-1"></i> Salvar Rascunho</button>
+				<button type="button" class="btn btn-success" onclick="salvarEscala('Publicada')"><i class="fa fa-check me-1"></i> Salvar e Publicar</button>
 			</div>
 		</div>
 	</div>
@@ -101,7 +109,8 @@ if ($id_escala != "") {
 	var funcoesCadastradas = <?php echo json_encode($funcoes_cadastradas) ?>;
 	var escalaExistente = <?php echo $escala_existente ? json_encode($escala_existente) : 'null' ?>;
 	var idEscalaAtual = <?php echo $id_escala != "" ? $id_escala : 'null' ?>;
-	var efetivoDisponivel = [];
-	var equipeContador = 0;
+	var turnoEdicao = <?php echo $escala_existente ? json_encode($escala_existente['escala']['turno']) : 'null' ?>;
+	var efetivoDisponivel = { A: [], B: [] };
+	var equipeContador = { A: 0, B: 0 };
 </script>
 <script src="js/escalas.js"></script>

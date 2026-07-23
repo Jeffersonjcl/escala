@@ -94,8 +94,15 @@ try {
 	}
 
 	foreach ($equipes as $equipe) {
-		$pdo->prepare("INSERT INTO escala_equipes SET escala_id = :escala_id, nome_equipe = :nome_equipe, viatura = :viatura")
-			->execute([':escala_id' => $escala_id, ':nome_equipe' => $equipe['nome_equipe'], ':viatura' => @$equipe['viatura']]);
+		$pdo->prepare("INSERT INTO escala_equipes SET escala_id = :escala_id, nome_equipe = :nome_equipe, viatura = :viatura, horario_inicio = :horario_inicio, horario_fim = :horario_fim, area_atuacao = :area_atuacao")
+			->execute([
+				':escala_id' => $escala_id,
+				':nome_equipe' => $equipe['nome_equipe'],
+				':viatura' => @$equipe['viatura'],
+				':horario_inicio' => @$equipe['horario_inicio'] ?: null,
+				':horario_fim' => @$equipe['horario_fim'] ?: null,
+				':area_atuacao' => @$equipe['area_atuacao'] ?: null
+			]);
 		$equipe_id = $pdo->lastInsertId();
 
 		foreach ($equipe['membros'] as $membro) {
