@@ -131,14 +131,17 @@ HTML;
 		$('#turno_padrao').val(turno_padrao);
 		$('#funcao_id').val(funcao_id);
 		$('#disponivel').val(disponivel).change();
-		$('#motivo_indispo').val(motivo_indispo);
+		if (typeof carregarMotivoEditor === 'function') {
+			carregarMotivoEditor(motivo_indispo);
+		} else {
+			$('#motivo_indispo').val(motivo_indispo);
+		}
 		$('#indispo_data_inicio').val(indispo_data_inicio || '');
 		$('#indispo_dias').val(indispo_dias || '');
-		$('#foto_atual').val(foto);
-
 		if (typeof calcularPrevisaoRetorno === 'function') {
 			calcularPrevisaoRetorno();
 		}
+		$('#foto_atual').val(foto);
 
 		// acesso ao painel do policial só é oferecido no cadastro inicial
 		$('#linhaCriarAcesso').hide();
@@ -156,7 +159,11 @@ HTML;
 		$('#turno_padrao').val('');
 		$('#funcao_id').val('');
 		$('#disponivel').val('1').change();
-		$('#motivo_indispo').val('');
+		if (typeof carregarMotivoEditor === 'function') {
+			carregarMotivoEditor('');
+		} else {
+			$('#motivo_indispo').val('');
+		}
 		$('#indispo_data_inicio').val('');
 		$('#indispo_dias').val('');
 		$('#indispo_previsao_retorno').val('');

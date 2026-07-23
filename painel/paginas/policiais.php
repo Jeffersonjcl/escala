@@ -183,13 +183,41 @@ $funcoes_cadastradas = $query->fetchAll(PDO::FETCH_ASSOC);
 <script src="js/ajax.js"></script>
 
 <script type="text/javascript">
+	// O nicEdit (nicEditors.allTextAreas) esconde o textarea #motivo_indispo e só
+	// copia o conteúdo para ele no submit nativo. Como o textarea fica required e
+	// oculto, a validação nativa bloqueia o submit antes desse sync (impasse).
+	// Estes helpers sincronizam o editor e o textarea nos dois sentidos.
+	function editorMotivo() {
+		return (typeof nicEditors !== 'undefined') ? nicEditors.findEditor('motivo_indispo') : null;
+	}
+
+	function sincronizarMotivoEditor() {
+		var ed = editorMotivo();
+		if (!ed) return;
+		ed.saveContent();
+		var txt = $('#motivo_indispo').val();
+		if (txt.replace(/<br\s*\/?>|&nbsp;|<\/?[^>]+>|\s+/gi, '') === '') {
+			$('#motivo_indispo').val('');
+		}
+	}
+
+	function carregarMotivoEditor(html) {
+		$('#motivo_indispo').val(html || '');
+		var ed = editorMotivo();
+		if (ed) ed.setContent(html || '');
+	}
+
+	// Copia o conteúdo do editor para o textarea antes da validação/submit nativo.
+	$(document).on('mousedown', '#btn_salvar', sincronizarMotivoEditor);
+
 	$('#disponivel').change(function() {
 		if ($(this).val() == '0') {
 			$('#campoMotivo').fadeIn();
 			$('#campoPeriodoIndispo').fadeIn();
 			$('#motivo_indispo').attr('required', true);
 		} else {
-			$('#campoMotivo').fadeOut().find('textarea').val('');
+			$('#campoMotivo').fadeOut();
+			carregarMotivoEditor('');
 			$('#campoPeriodoIndispo').fadeOut();
 			$('#indispo_data_inicio').val('');
 			$('#indispo_dias').val('');
