@@ -42,12 +42,29 @@ for ($i = 0; $i < $linhas; $i++) {
 	$disponivel = $res[$i]['disponivel'];
 	$motivo_indispo = @$res[$i]['motivo_indispo'];
 	$motivo_js = htmlspecialchars($motivo_indispo ?? '', ENT_QUOTES);
+	$indispo_data_inicio = @$res[$i]['indispo_data_inicio'];
+	$indispo_dias = @$res[$i]['indispo_dias'];
 
 	if ($disponivel == 1) {
 		$badge = '<span class="badge bg-success">Disponível</span>';
 	} else {
-		$badge = '<span class="badge bg-danger" title="' . htmlspecialchars($motivo_indispo ?? '') . '">Indisponível</span>';
+		$titulo = $motivo_indispo ?? '';
+		$info_periodo = '';
+
+		if (!empty($indispo_data_inicio) && !empty($indispo_dias)) {
+			$dt_inicio = new DateTime($indispo_data_inicio);
+			$dt_retorno = (clone $dt_inicio)->modify('+' . (int) $indispo_dias . ' days');
+			$retorno_fmt = $dt_retorno->format('d/m/Y');
+
+			$titulo .= ($titulo != '' ? ' | ' : '') . $indispo_dias . ' dia(s) a partir de ' . $dt_inicio->format('d/m/Y') . ' | Retorno: ' . $retorno_fmt;
+			$info_periodo = '<br><small class="text-muted">Retorno: ' . $retorno_fmt . ' (' . $indispo_dias . ' dia(s))</small>';
+		}
+
+		$badge = '<span class="badge bg-danger" title="' . htmlspecialchars($titulo) . '">Indisponível</span>' . $info_periodo;
 	}
+
+	$indispo_data_inicio_js = htmlspecialchars($indispo_data_inicio ?? '', ENT_QUOTES);
+	$indispo_dias_js = htmlspecialchars((string) ($indispo_dias ?? ''), ENT_QUOTES);
 
 	echo <<<HTML
 <tr>
@@ -64,7 +81,7 @@ for ($i = 0; $i < $linhas; $i++) {
 <td>{$funcao_nome}</td>
 <td>{$badge}</td>
 <td>
-	<a class="btn btn-info btn-sm" href="#" onclick='editar({$id}, "{$nome_guerra}", "{$nome_completo}", "{$matricula}", "{$telefone}", "{$grupo}", "{$turno_padrao}", "{$funcao_id}", "{$disponivel}", "{$motivo_js}", "{$foto}")' title="Editar Dados"><i class="fa fa-edit"></i></a>
+	<a class="btn btn-info btn-sm" href="#" onclick='editar({$id}, "{$nome_guerra}", "{$nome_completo}", "{$matricula}", "{$telefone}", "{$grupo}", "{$turno_padrao}", "{$funcao_id}", "{$disponivel}", "{$motivo_js}", "{$foto}", "{$indispo_data_inicio_js}", "{$indispo_dias_js}")' title="Editar Dados"><i class="fa fa-edit"></i></a>
 
 <div class="dropdown" style="display: inline-block;">
 		<a class="btn btn-danger btn-sm" href="#" aria-expanded="false" aria-haspopup="true" data-bs-toggle="dropdown" class="dropdown" title="Excluir Policial"><i class="fa fa-trash-can"></i> </a>
@@ -101,7 +118,7 @@ HTML;
 </script>
 
 <script type="text/javascript">
-	function editar(id, nome_guerra, nome_completo, matricula, telefone, grupo, turno_padrao, funcao_id, disponivel, motivo_indispo, foto) {
+	function editar(id, nome_guerra, nome_completo, matricula, telefone, grupo, turno_padrao, funcao_id, disponivel, motivo_indispo, foto, indispo_data_inicio, indispo_dias) {
 		$('#mensagem').text('');
 		$('#titulo_inserir').text('Editar Policial');
 
@@ -115,7 +132,13 @@ HTML;
 		$('#funcao_id').val(funcao_id);
 		$('#disponivel').val(disponivel).change();
 		$('#motivo_indispo').val(motivo_indispo);
+		$('#indispo_data_inicio').val(indispo_data_inicio || '');
+		$('#indispo_dias').val(indispo_dias || '');
 		$('#foto_atual').val(foto);
+
+		if (typeof calcularPrevisaoRetorno === 'function') {
+			calcularPrevisaoRetorno();
+		}
 
 		// acesso ao painel do policial só é oferecido no cadastro inicial
 		$('#linhaCriarAcesso').hide();
@@ -134,6 +157,9 @@ HTML;
 		$('#funcao_id').val('');
 		$('#disponivel').val('1').change();
 		$('#motivo_indispo').val('');
+		$('#indispo_data_inicio').val('');
+		$('#indispo_dias').val('');
+		$('#indispo_previsao_retorno').val('');
 		$('#foto_atual').val('');
 		$('#criar_acesso').prop('checked', false).change();
 		$('#linhaCriarAcesso').show();

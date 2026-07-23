@@ -13,12 +13,19 @@ $turno_padrao = $_POST['turno_padrao'];
 $funcao_id = $_POST['funcao_id'];
 $disponivel = $_POST['disponivel'];
 $motivo_indispo = @$_POST['motivo_indispo'];
+$indispo_data_inicio = @$_POST['indispo_data_inicio'];
+$indispo_dias = @$_POST['indispo_dias'];
 $foto_atual = @$_POST['foto_atual'];
 $criar_acesso = @$_POST['criar_acesso'];
 $email_acesso = @$_POST['email_acesso'];
 
 if ($disponivel == 1) {
 	$motivo_indispo = null;
+	$indispo_data_inicio = null;
+	$indispo_dias = null;
+} else {
+	$indispo_data_inicio = ($indispo_data_inicio != "") ? $indispo_data_inicio : null;
+	$indispo_dias = ($indispo_dias != "" && (int) $indispo_dias > 0) ? (int) $indispo_dias : null;
 }
 
 //SCRIPT PARA SUBIR FOTO NO SERVIDOR (mesmo padrão do editar-perfil.php)
@@ -54,10 +61,10 @@ if (@$_FILES['foto']['name'] != "") {
 
 if ($id == "") {
 
-	$query = $pdo->prepare("INSERT INTO $tabela SET nome_guerra = :nome_guerra, nome_completo = :nome_completo, matricula = :matricula, telefone = :telefone, grupo = :grupo, turno_padrao = :turno_padrao, funcao_id = :funcao_id, disponivel = :disponivel, motivo_indispo = :motivo_indispo, foto = :foto");
+	$query = $pdo->prepare("INSERT INTO $tabela SET nome_guerra = :nome_guerra, nome_completo = :nome_completo, matricula = :matricula, telefone = :telefone, grupo = :grupo, turno_padrao = :turno_padrao, funcao_id = :funcao_id, disponivel = :disponivel, motivo_indispo = :motivo_indispo, indispo_data_inicio = :indispo_data_inicio, indispo_dias = :indispo_dias, foto = :foto");
 } else {
 
-	$query = $pdo->prepare("UPDATE $tabela SET nome_guerra = :nome_guerra, nome_completo = :nome_completo, matricula = :matricula, telefone = :telefone, grupo = :grupo, turno_padrao = :turno_padrao, funcao_id = :funcao_id, disponivel = :disponivel, motivo_indispo = :motivo_indispo, foto = :foto where id = '$id'");
+	$query = $pdo->prepare("UPDATE $tabela SET nome_guerra = :nome_guerra, nome_completo = :nome_completo, matricula = :matricula, telefone = :telefone, grupo = :grupo, turno_padrao = :turno_padrao, funcao_id = :funcao_id, disponivel = :disponivel, motivo_indispo = :motivo_indispo, indispo_data_inicio = :indispo_data_inicio, indispo_dias = :indispo_dias, foto = :foto where id = '$id'");
 }
 
 $query->bindValue(":nome_guerra", "$nome_guerra");
@@ -69,6 +76,8 @@ $query->bindValue(":turno_padrao", "$turno_padrao");
 $query->bindValue(":funcao_id", "$funcao_id");
 $query->bindValue(":disponivel", "$disponivel");
 $query->bindValue(":motivo_indispo", $motivo_indispo);
+$query->bindValue(":indispo_data_inicio", $indispo_data_inicio);
+$query->bindValue(":indispo_dias", $indispo_dias, $indispo_dias === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
 $query->bindValue(":foto", "$foto");
 $query->execute();
 
