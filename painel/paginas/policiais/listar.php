@@ -3,7 +3,7 @@ require_once(__DIR__ . '/../_guard.php');
 $tabela = 'policiais';
 require_once("../../../conexao.php");
 
-$query = $pdo->query("SELECT p.*, f.nome funcao_nome FROM $tabela p INNER JOIN funcoes f ON f.id = p.funcao_id ORDER BY p.nome_guerra ASC");
+$query = $pdo->query("SELECT p.*, f.nome funcao_nome, po.nome posto_nome FROM $tabela p INNER JOIN funcoes f ON f.id = p.funcao_id LEFT JOIN postos po ON po.id = p.posto_id ORDER BY p.nome_guerra ASC");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if ($linhas > 0) {
@@ -15,6 +15,7 @@ if ($linhas > 0) {
 	<th align="center" width="5%" class="text-center">Selecionar</th>
 	<th>Foto</th>
 	<th>Nome de Guerra</th>
+	<th>Posto/Grad.</th>
 	<th>Grupo</th>
 	<th>Turno</th>
 	<th>Função</th>
@@ -35,19 +36,42 @@ for ($i = 0; $i < $linhas; $i++) {
 	$matricula = @$res[$i]['matricula'];
 	$telefone = @$res[$i]['telefone'];
 	$grupo = $res[$i]['grupo'];
+	$drso = $res[$i]['drso'];
 	$turno_padrao = $res[$i]['turno_padrao'];
 	$funcao_id = $res[$i]['funcao_id'];
 	$funcao_nome = $res[$i]['funcao_nome'];
+	$posto_id = @$res[$i]['posto_id'];
+	$posto_nome = @$res[$i]['posto_nome'];
+	$numeral = @$res[$i]['numeral'];
 	$foto = $res[$i]['foto'] ?: 'sem-foto.jpg';
 	$disponivel = $res[$i]['disponivel'];
 	$motivo_indispo = @$res[$i]['motivo_indispo'];
 	$motivo_js = htmlspecialchars($motivo_indispo ?? '', ENT_QUOTES);
+	$data_inicio_indispo = @$res[$i]['data_inicio_indispo'];
+	$dias_indispo = @$res[$i]['dias_indispo'];
+	$data_fim_indispo = @$res[$i]['data_fim_indispo'];
 
 	if ($disponivel == 1) {
 		$badge = '<span class="badge bg-success">Disponível</span>';
 	} else {
-		$badge = '<span class="badge bg-danger" title="' . htmlspecialchars($motivo_indispo ?? '') . '">Indisponível</span>';
+		$titulo_badge = htmlspecialchars($motivo_indispo ?? '');
+		if ($data_fim_indispo) {
+			$titulo_badge .= ' (retorna em ' . date('d/m/Y', strtotime($data_fim_indispo)) . ')';
+		}
+		$badge = '<span class="badge bg-danger" title="' . $titulo_badge . '">Indisponível</span>';
 	}
+
+	$posto_display = $posto_nome ? htmlspecialchars($posto_nome) : '-';
+	if ($numeral) {
+		$posto_display .= ' ' . htmlspecialchars($numeral);
+	}
+	$numeral_js = htmlspecialchars($numeral ?? '', ENT_QUOTES);
+
+	$grupo_display = $grupo ?: '<span class="text-muted">Qualquer</span>';
+	if ($drso) {
+		$grupo_display .= ' <span class="badge bg-secondary" title="Disponível para ser escalado em grupo diferente do seu">DRSO</span>';
+	}
+	$turno_display = $turno_padrao ? 'Turno ' . $turno_padrao : '<span class="text-muted">Qualquer</span>';
 
 	echo <<<HTML
 <tr>
@@ -59,12 +83,13 @@ for ($i = 0; $i < $linhas; $i++) {
 </td>
 <td><img src="images/perfil/{$foto}" width="30px" style="border-radius:50%"></td>
 <td>{$nome_guerra}</td>
-<td>{$grupo}</td>
-<td>Turno {$turno_padrao}</td>
+<td>{$posto_display}</td>
+<td>{$grupo_display}</td>
+<td>{$turno_display}</td>
 <td>{$funcao_nome}</td>
 <td>{$badge}</td>
 <td>
-	<a class="btn btn-info btn-sm" href="#" onclick='editar({$id}, "{$nome_guerra}", "{$nome_completo}", "{$matricula}", "{$telefone}", "{$grupo}", "{$turno_padrao}", "{$funcao_id}", "{$disponivel}", "{$motivo_js}", "{$foto}")' title="Editar Dados"><i class="fa fa-edit"></i></a>
+	<a class="btn btn-info btn-sm" href="#" onclick='editar({$id}, "{$nome_guerra}", "{$nome_completo}", "{$matricula}", "{$telefone}", "{$grupo}", "{$turno_padrao}", "{$funcao_id}", "{$disponivel}", "{$motivo_js}", "{$foto}", "{$data_inicio_indispo}", "{$dias_indispo}", "{$posto_id}", "{$numeral_js}", "{$drso}")' title="Editar Dados"><i class="fa fa-edit"></i></a>
 
 <div class="dropdown" style="display: inline-block;">
 		<a class="btn btn-danger btn-sm" href="#" aria-expanded="false" aria-haspopup="true" data-bs-toggle="dropdown" class="dropdown" title="Excluir Policial"><i class="fa fa-trash-can"></i> </a>
@@ -101,7 +126,7 @@ HTML;
 </script>
 
 <script type="text/javascript">
-	function editar(id, nome_guerra, nome_completo, matricula, telefone, grupo, turno_padrao, funcao_id, disponivel, motivo_indispo, foto) {
+	function editar(id, nome_guerra, nome_completo, matricula, telefone, grupo, turno_padrao, funcao_id, disponivel, motivo_indispo, foto, data_inicio_indispo, dias_indispo, posto_id, numeral, drso) {
 		$('#mensagem').text('');
 		$('#titulo_inserir').text('Editar Policial');
 
@@ -111,10 +136,33 @@ HTML;
 		$('#matricula').val(matricula);
 		$('#telefone').val(telefone);
 		$('#grupo').val(grupo);
+		$('#drso').prop('checked', drso == '1');
+		$('.dia-drso').prop('checked', false);
+		if (drso == '1') {
+			$('#campoDiasDrso').show();
+			$.ajax({
+				url: 'paginas/policiais/dias_drso.php',
+				method: 'POST',
+				data: { policial_id: id },
+				dataType: 'json',
+				success: function(dias) {
+					dias.forEach(function(dia) {
+						$('#dia_drso_' + dia).prop('checked', true);
+					});
+				}
+			});
+		} else {
+			$('#campoDiasDrso').hide();
+		}
 		$('#turno_padrao').val(turno_padrao);
 		$('#funcao_id').val(funcao_id);
+		$('#posto_id').val(posto_id);
+		$('#numeral').val(numeral);
 		$('#disponivel').val(disponivel).change();
 		$('#motivo_indispo').val(motivo_indispo);
+		$('#data_inicio_indispo').val(data_inicio_indispo);
+		$('#dias_indispo').val(dias_indispo);
+		calcularRetornoIndispo();
 		$('#foto_atual').val(foto);
 
 		// acesso ao painel do policial só é oferecido no cadastro inicial
@@ -130,10 +178,18 @@ HTML;
 		$('#matricula').val('');
 		$('#telefone').val('');
 		$('#grupo').val('');
+		$('#drso').prop('checked', false);
+		$('#campoDiasDrso').hide();
+		$('.dia-drso').prop('checked', false);
 		$('#turno_padrao').val('');
 		$('#funcao_id').val('');
+		$('#posto_id').val('');
+		$('#numeral').val('');
 		$('#disponivel').val('1').change();
 		$('#motivo_indispo').val('');
+		$('#data_inicio_indispo').val('');
+		$('#dias_indispo').val('');
+		$('#data_fim_indispo').val('');
 		$('#foto_atual').val('');
 		$('#criar_acesso').prop('checked', false).change();
 		$('#linhaCriarAcesso').show();

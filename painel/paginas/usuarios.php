@@ -79,7 +79,7 @@ if (@$usuarios == 'ocultar') {
 							<select class="form-select" name="nivel" id="nivel">
 								<option value="">Selecione o Nível</option>
 								<option value="Administrador">Administrador</option>
-								<option value="Escalante">Escalante (P4)</option>
+								<option value="Escalante">Escalante</option>
 								<option value="Comandante">Comandante</option>
 							</select>
 						</div>

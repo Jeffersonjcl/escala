@@ -22,13 +22,19 @@ if (!$escala) {
 
 $dataF = implode('/', array_reverse(explode('-', $escala['data_escala'])));
 
-$query = $pdo->prepare("SELECT * from escala_equipes where escala_id = :id order by id asc");
+$query = $pdo->prepare("SELECT * from escala_equipes where escala_id = :id order by turno asc, id asc");
 $query->bindValue(":id", $id);
 $query->execute();
 $equipes = $query->fetchAll(PDO::FETCH_ASSOC);
 
 $html_equipes = '';
+$turno_atual = null;
 foreach ($equipes as $equipe) {
+	if ($equipe['turno'] !== $turno_atual) {
+		$turno_atual = $equipe['turno'];
+		$html_equipes .= '<h4 style="margin-top:20px; margin-bottom:0;">TURNO ' . htmlspecialchars($turno_atual) . '</h4>';
+	}
+
 	$query2 = $pdo->prepare("SELECT p.nome_guerra, p.matricula, f.nome funcao_nome
 		FROM escala_membros em
 		INNER JOIN policiais p ON p.id = em.policial_id
@@ -91,7 +97,7 @@ $assinatura_comandante = assinaturaTexto($escala['assinado_comandante'], $escala
 $html_conteudo = '
 <h3 style="text-align: center; margin-bottom: 5px;">POLÍCIA MILITAR DO CEARÁ</h3>
 <h4 style="text-align: center; margin-top: 0;">' . htmlspecialchars($nome_sistema) . '</h4>
-<p style="text-align: center;"><b>ESCALA DE SERVIÇO OPERACIONAL EM TURNO ' . $escala['turno'] . ' - ' . $dataF . '</b></p>
+<p style="text-align: center;"><b>ESCALA DE SERVIÇO OPERACIONAL - GRUPO ' . strtoupper($escala['grupo'] ?? '') . ' - ' . $dataF . '</b></p>
 
 ' . $html_equipes . '
 
@@ -99,7 +105,7 @@ $html_conteudo = '
 	<tr>
 		<td width="50%">
 			' . $assinatura_escalante . '
-			<b>ESCALANTE P4</b><br>
+			<b>ESCALANTE</b><br>
 			1º Pel / 1ª Cia / 1º BPRAIO
 		</td>
 		<td width="50%">
@@ -117,4 +123,4 @@ $dompdf = new Dompdf($options);
 $dompdf->loadHtml($html_conteudo);
 $dompdf->setPaper('A4', 'portrait');
 $dompdf->render();
-$dompdf->stream("Escala_" . $escala['data_escala'] . "_Turno" . $escala['turno'] . ".pdf", array("Attachment" => false));
+$dompdf->stream("Escala_" . $escala['data_escala'] . "_" . $escala['grupo'] . ".pdf", array("Attachment" => false));

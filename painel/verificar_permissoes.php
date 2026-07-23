@@ -15,6 +15,7 @@ $acessos = 'ocultar';
 //grupo efetivo
 $policiais = 'ocultar';
 $funcoes = 'ocultar';
+$postos = 'ocultar';
 
 //grupo escala
 $escalas = 'ocultar';
@@ -62,6 +63,10 @@ if ($total_reg > 0) {
 			$funcoes = '';
 		}
 
+		if ($chave == 'postos') {
+			$postos = '';
+		}
+
 		if ($chave == 'escalas') {
 			$escalas = '';
 		}
@@ -106,7 +111,7 @@ if ($usuarios == 'ocultar' and $grupos == 'ocultar' and $acessos == 'ocultar') {
 	$menu_administracao = '';
 }
 
-if ($policiais == 'ocultar' and $funcoes == 'ocultar') {
+if ($policiais == 'ocultar' and $funcoes == 'ocultar' and $postos == 'ocultar') {
 	$menu_efetivo = 'ocultar';
 } else {
 	$menu_efetivo = '';

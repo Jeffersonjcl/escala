@@ -32,6 +32,7 @@ require_once("verificar.php");
 /** @var string $home */
 /** @var string $policiais */
 /** @var string $funcoes */
+/** @var string $postos */
 /** @var string $escalas */
 /** @var string $escalas_listagem */
 /** @var string $usuarios */
@@ -390,6 +391,8 @@ if ($linhas > 0) {
                                     <li class="<?php echo @$policiais ?>"><a class="slide-item" href="policiais"> Policiais</a></li>
 
                                     <li class="<?php echo @$funcoes ?>"><a class="slide-item" href="funcoes"> Funções</a></li>
+
+                                    <li class="<?php echo @$postos ?>"><a class="slide-item" href="postos"> Postos/Graduações</a></li>
 
                                 </ul>
                             </li>
@@ -1052,11 +1055,6 @@ if ($linhas > 0) {
 </script>
 
 
-
-<script src="//js.nicedit.com/nicEdit-latest.js" type="text/javascript"></script>
-<script type="text/javascript">
-    bkLib.onDomLoaded(nicEditors.allTextAreas);
-</script>
 
 <script type="text/javascript">
     // A tag <base> (ver topo do arquivo) resolve href="#" para a URL base (painel/),

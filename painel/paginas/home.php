@@ -22,7 +22,7 @@ $total_escalas_mes = $query->fetch(PDO::FETCH_ASSOC)['total'];
 $query = $pdo->query("SELECT COUNT(*) total FROM escalas_diarias WHERE status = 'Publicada' AND (assinado_escalante = 0 OR assinado_comandante = 0)");
 $total_pendentes_assinatura = $query->fetch(PDO::FETCH_ASSOC)['total'];
 
-$query = $pdo->query("SELECT ed.*, (SELECT COUNT(*) FROM escala_membros em INNER JOIN escala_equipes ee ON ee.id = em.equipe_id WHERE ee.escala_id = ed.id) total_membros FROM escalas_diarias ed WHERE ed.data_escala >= CURDATE() ORDER BY ed.data_escala ASC, ed.turno ASC LIMIT 5");
+$query = $pdo->query("SELECT ed.*, (SELECT COUNT(*) FROM escala_membros em INNER JOIN escala_equipes ee ON ee.id = em.equipe_id WHERE ee.escala_id = ed.id) total_membros FROM escalas_diarias ed WHERE ed.data_escala >= CURDATE() ORDER BY ed.data_escala ASC LIMIT 5");
 $proximas_escalas = $query->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -126,7 +126,7 @@ $proximas_escalas = $query->fetchAll(PDO::FETCH_ASSOC);
 					<thead>
 						<tr>
 							<th>Data</th>
-							<th>Turno</th>
+							<th>Grupo</th>
 							<th>Equipes</th>
 							<th>Status</th>
 							<th>Escalante</th>
@@ -139,7 +139,7 @@ $proximas_escalas = $query->fetchAll(PDO::FETCH_ASSOC);
 						?>
 							<tr>
 								<td><?php echo $dataF ?></td>
-								<td>Turno <?php echo $e['turno'] ?></td>
+								<td><?php echo $e['grupo'] ?></td>
 								<td><?php echo $e['total_membros'] ?> membro(s)</td>
 								<td><span class="badge <?php echo $e['status'] == 'Publicada' ? 'bg-success' : 'bg-secondary' ?>"><?php echo $e['status'] ?></span></td>
 								<td><?php echo $e['assinado_escalante'] ? '<i class="fa fa-check-circle text-success"></i>' : '<i class="fa fa-clock text-warning"></i>' ?></td>

@@ -75,10 +75,11 @@ INSERT INTO `acessos` (`id`, `nome`, `chave`, `grupo`) VALUES
 (8, 'Criar Escala', 'escalas', 2),
 (9, 'Ver Escalas', 'escalas_listagem', 2),
 (10, 'Assinar como Escalante', 'assinar_escalante', 2),
-(11, 'Assinar como Comandante', 'assinar_comandante', 2);
+(11, 'Assinar como Comandante', 'assinar_comandante', 2),
+(12, 'Postos/Graduações', 'postos', 1);
 
 ALTER TABLE `acessos` ADD PRIMARY KEY (`id`);
-ALTER TABLE `acessos` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+ALTER TABLE `acessos` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 -- --------------------------------------------------------
 
@@ -173,31 +174,62 @@ ALTER TABLE `funcoes` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMEN
 
 -- --------------------------------------------------------
 
+CREATE TABLE `postos` (
+  `id` int(11) NOT NULL,
+  `nome` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+ALTER TABLE `postos` ADD PRIMARY KEY (`id`), ADD UNIQUE KEY `uq_posto_nome` (`nome`);
+ALTER TABLE `postos` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+
+-- --------------------------------------------------------
+
 CREATE TABLE `policiais` (
   `id` int(11) NOT NULL,
   `nome_guerra` varchar(100) NOT NULL,
   `nome_completo` varchar(150) DEFAULT NULL,
   `matricula` varchar(30) DEFAULT NULL,
-  `grupo` enum('Alpha','Bravo') NOT NULL,
-  `turno_padrao` enum('A','B') NOT NULL,
+  `grupo` enum('Alpha','Bravo') DEFAULT NULL,
+  `drso` tinyint(1) NOT NULL DEFAULT 0,
+  `turno_padrao` enum('A','B') DEFAULT NULL,
   `funcao_id` int(11) NOT NULL,
+  `posto_id` int(11) DEFAULT NULL,
+  `numeral` varchar(20) DEFAULT NULL,
   `telefone` varchar(20) DEFAULT NULL,
   `foto` varchar(150) DEFAULT 'sem-foto.jpg',
   `disponivel` tinyint(1) NOT NULL DEFAULT 1,
   `motivo_indispo` text DEFAULT NULL,
+  `data_inicio_indispo` date DEFAULT NULL,
+  `dias_indispo` int(11) DEFAULT NULL,
+  `data_fim_indispo` date DEFAULT NULL,
   `data_cadastro` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-ALTER TABLE `policiais` ADD PRIMARY KEY (`id`), ADD KEY `fk_policiais_funcao` (`funcao_id`);
+ALTER TABLE `policiais` ADD PRIMARY KEY (`id`), ADD KEY `fk_policiais_funcao` (`funcao_id`), ADD KEY `fk_policiais_posto` (`posto_id`);
 ALTER TABLE `policiais` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 ALTER TABLE `policiais` ADD CONSTRAINT `fk_policiais_funcao` FOREIGN KEY (`funcao_id`) REFERENCES `funcoes` (`id`);
+ALTER TABLE `policiais` ADD CONSTRAINT `fk_policiais_posto` FOREIGN KEY (`posto_id`) REFERENCES `postos` (`id`);
+
+-- --------------------------------------------------------
+
+CREATE TABLE `policiais_drso_dias` (
+  `id` int(11) NOT NULL,
+  `policial_id` int(11) NOT NULL,
+  `ano` int(11) NOT NULL,
+  `mes` int(11) NOT NULL,
+  `dia` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+ALTER TABLE `policiais_drso_dias` ADD PRIMARY KEY (`id`), ADD UNIQUE KEY `uq_policial_dia` (`policial_id`,`ano`,`mes`,`dia`);
+ALTER TABLE `policiais_drso_dias` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `policiais_drso_dias` ADD CONSTRAINT `fk_drso_dias_policial` FOREIGN KEY (`policial_id`) REFERENCES `policiais` (`id`) ON DELETE CASCADE;
 
 -- --------------------------------------------------------
 
 CREATE TABLE `escalas_diarias` (
   `id` int(11) NOT NULL,
   `data_escala` date NOT NULL,
-  `turno` enum('A','B') NOT NULL,
+  `grupo` enum('Alpha','Bravo') NOT NULL,
   `status` enum('Rascunho','Publicada') NOT NULL DEFAULT 'Rascunho',
   `assinado_escalante` tinyint(1) NOT NULL DEFAULT 0,
   `escalante_id` int(11) DEFAULT NULL,
@@ -211,7 +243,7 @@ CREATE TABLE `escalas_diarias` (
 
 ALTER TABLE `escalas_diarias`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uq_data_turno` (`data_escala`,`turno`),
+  ADD UNIQUE KEY `uq_data_escala` (`data_escala`),
   ADD KEY `fk_escalas_escalante` (`escalante_id`),
   ADD KEY `fk_escalas_comandante` (`comandante_id`),
   ADD KEY `fk_escalas_criador` (`criado_por`);
@@ -226,6 +258,7 @@ ALTER TABLE `escalas_diarias`
 CREATE TABLE `escala_equipes` (
   `id` int(11) NOT NULL,
   `escala_id` int(11) NOT NULL,
+  `turno` enum('A','B') NOT NULL,
   `nome_equipe` varchar(50) NOT NULL,
   `viatura` varchar(30) DEFAULT NULL,
   `horario_inicio` time DEFAULT NULL,

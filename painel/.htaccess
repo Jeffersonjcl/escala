@@ -6,6 +6,7 @@ RewriteRule ^(.*)$ $1.php
 RewriteRule ^home(.*)$ index.php?pagina=home [L]
 RewriteRule ^policiais(.*)$ index.php?pagina=policiais [L]
 RewriteRule ^funcoes(.*)$ index.php?pagina=funcoes [L]
+RewriteRule ^postos(.*)$ index.php?pagina=postos [L]
 RewriteRule ^escalas_listagem(.*)$ index.php?pagina=escalas_listagem [L]
 RewriteRule ^escalas(.*)$ index.php?pagina=escalas [L]
 RewriteRule ^usuarios(.*)$ index.php?pagina=usuarios [L]

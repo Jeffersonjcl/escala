@@ -14,7 +14,7 @@ $query = $pdo->prepare("SELECT ed.*,
 	LEFT JOIN usuarios ue ON ue.id = ed.escalante_id
 	LEFT JOIN usuarios uc ON uc.id = ed.comandante_id
 	WHERE MONTH(ed.data_escala) = :mes AND YEAR(ed.data_escala) = :ano
-	ORDER BY ed.data_escala DESC, ed.turno ASC");
+	ORDER BY ed.data_escala DESC");
 $query->bindValue(":mes", $mes);
 $query->bindValue(":ano", $ano);
 $query->execute();
@@ -28,7 +28,7 @@ if ($linhas > 0) {
 	<thead>
 	<tr>
 	<th>Data</th>
-	<th>Turno</th>
+	<th>Grupo</th>
 	<th>Equipes</th>
 	<th>Status</th>
 	<th>Escalante</th>
@@ -45,7 +45,7 @@ HTML;
 foreach ($res as $e) {
 	$id = $e['id'];
 	$dataF = implode('/', array_reverse(explode('-', $e['data_escala'])));
-	$turno = $e['turno'];
+	$grupo = $e['grupo'] ?: '-';
 	$status = $e['status'];
 	$total_equipes = $e['total_equipes'];
 	$total_membros = $e['total_membros'];
@@ -75,7 +75,7 @@ foreach ($res as $e) {
 	$acoes .= '<a class="btn btn-secondary btn-sm" href="rel/gerar_pdf.php?id=' . $id . '" target="_blank" title="Imprimir"><i class="fa fa-print"></i></a> ';
 
 	if ($status == 'Publicada' and @$assinar_escalante != 'ocultar' and !$e['assinado_escalante']) {
-		$acoes .= '<a class="btn btn-warning btn-sm" href="#" onclick="assinarEscala(' . $id . ', \'escalante\')" title="Assinar como Escalante"><i class="fa fa-signature"></i> P4</a> ';
+		$acoes .= '<a class="btn btn-warning btn-sm" href="#" onclick="assinarEscala(' . $id . ', \'escalante\')" title="Assinar como Escalante"><i class="fa fa-signature"></i> Escalante</a> ';
 	}
 
 	if ($status == 'Publicada' and @$assinar_comandante != 'ocultar' and !$e['assinado_comandante']) {
@@ -84,7 +84,7 @@ foreach ($res as $e) {
 
 	echo "<tr>
 		<td>$dataF</td>
-		<td>Turno $turno</td>
+		<td>$grupo</td>
 		<td>$total_equipes equipe(s) / $total_membros membro(s)</td>
 		<td><span class='badge $badge_status'>$status</span></td>
 		<td>$escalante_html</td>

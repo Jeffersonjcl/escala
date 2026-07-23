@@ -8,17 +8,31 @@ $nome_guerra = $_POST['nome_guerra'];
 $nome_completo = $_POST['nome_completo'];
 $matricula = $_POST['matricula'];
 $telefone = $_POST['telefone'];
-$grupo = $_POST['grupo'];
-$turno_padrao = $_POST['turno_padrao'];
+$grupo = $_POST['grupo'] ?: null;
+$drso = @$_POST['drso'] == '1' ? 1 : 0;
+$turno_padrao = $_POST['turno_padrao'] ?: null;
 $funcao_id = $_POST['funcao_id'];
+$posto_id = @$_POST['posto_id'] ?: null;
+$numeral = @$_POST['numeral'];
 $disponivel = $_POST['disponivel'];
 $motivo_indispo = @$_POST['motivo_indispo'];
+$data_inicio_indispo = @$_POST['data_inicio_indispo'];
+$dias_indispo = @$_POST['dias_indispo'];
 $foto_atual = @$_POST['foto_atual'];
 $criar_acesso = @$_POST['criar_acesso'];
 $email_acesso = @$_POST['email_acesso'];
 
 if ($disponivel == 1) {
 	$motivo_indispo = null;
+	$data_inicio_indispo = null;
+	$dias_indispo = null;
+	$data_fim_indispo = null;
+} else {
+	$data_inicio_indispo = $data_inicio_indispo ?: null;
+	$dias_indispo = $dias_indispo !== '' ? (int) $dias_indispo : null;
+	$data_fim_indispo = ($data_inicio_indispo and $dias_indispo)
+		? date('Y-m-d', strtotime($data_inicio_indispo . ' +' . $dias_indispo . ' days'))
+		: null;
 }
 
 //SCRIPT PARA SUBIR FOTO NO SERVIDOR (mesmo padrão do editar-perfil.php)
@@ -54,25 +68,48 @@ if (@$_FILES['foto']['name'] != "") {
 
 if ($id == "") {
 
-	$query = $pdo->prepare("INSERT INTO $tabela SET nome_guerra = :nome_guerra, nome_completo = :nome_completo, matricula = :matricula, telefone = :telefone, grupo = :grupo, turno_padrao = :turno_padrao, funcao_id = :funcao_id, disponivel = :disponivel, motivo_indispo = :motivo_indispo, foto = :foto");
+	$query = $pdo->prepare("INSERT INTO $tabela SET nome_guerra = :nome_guerra, nome_completo = :nome_completo, matricula = :matricula, telefone = :telefone, grupo = :grupo, drso = :drso, turno_padrao = :turno_padrao, funcao_id = :funcao_id, posto_id = :posto_id, numeral = :numeral, disponivel = :disponivel, motivo_indispo = :motivo_indispo, data_inicio_indispo = :data_inicio_indispo, dias_indispo = :dias_indispo, data_fim_indispo = :data_fim_indispo, foto = :foto");
 } else {
 
-	$query = $pdo->prepare("UPDATE $tabela SET nome_guerra = :nome_guerra, nome_completo = :nome_completo, matricula = :matricula, telefone = :telefone, grupo = :grupo, turno_padrao = :turno_padrao, funcao_id = :funcao_id, disponivel = :disponivel, motivo_indispo = :motivo_indispo, foto = :foto where id = '$id'");
+	$query = $pdo->prepare("UPDATE $tabela SET nome_guerra = :nome_guerra, nome_completo = :nome_completo, matricula = :matricula, telefone = :telefone, grupo = :grupo, drso = :drso, turno_padrao = :turno_padrao, funcao_id = :funcao_id, posto_id = :posto_id, numeral = :numeral, disponivel = :disponivel, motivo_indispo = :motivo_indispo, data_inicio_indispo = :data_inicio_indispo, dias_indispo = :dias_indispo, data_fim_indispo = :data_fim_indispo, foto = :foto where id = '$id'");
 }
 
 $query->bindValue(":nome_guerra", "$nome_guerra");
 $query->bindValue(":nome_completo", "$nome_completo");
 $query->bindValue(":matricula", "$matricula");
 $query->bindValue(":telefone", "$telefone");
-$query->bindValue(":grupo", "$grupo");
-$query->bindValue(":turno_padrao", "$turno_padrao");
+$query->bindValue(":grupo", $grupo, $grupo === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
+$query->bindValue(":drso", $drso, PDO::PARAM_INT);
+$query->bindValue(":turno_padrao", $turno_padrao, $turno_padrao === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
 $query->bindValue(":funcao_id", "$funcao_id");
+$query->bindValue(":posto_id", $posto_id, $posto_id === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+$query->bindValue(":numeral", "$numeral");
 $query->bindValue(":disponivel", "$disponivel");
 $query->bindValue(":motivo_indispo", $motivo_indispo);
+$query->bindValue(":data_inicio_indispo", $data_inicio_indispo);
+$query->bindValue(":dias_indispo", $dias_indispo, $dias_indispo === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+$query->bindValue(":data_fim_indispo", $data_fim_indispo);
 $query->bindValue(":foto", "$foto");
 $query->execute();
 
 $policial_id = $id != "" ? $id : $pdo->lastInsertId();
+
+//dias do mês vigente em que o DRSO libera escala fora do grupo (substitui a marcação do mês atual)
+$ano_atual = date('Y');
+$mes_atual = date('n');
+
+$pdo->prepare("DELETE FROM policiais_drso_dias WHERE policial_id = :policial_id AND ano = :ano AND mes = :mes")
+	->execute([':policial_id' => $policial_id, ':ano' => $ano_atual, ':mes' => $mes_atual]);
+
+if ($drso == 1 and !empty($_POST['dias_drso'])) {
+	$insereDia = $pdo->prepare("INSERT INTO policiais_drso_dias SET policial_id = :policial_id, ano = :ano, mes = :mes, dia = :dia");
+	foreach ($_POST['dias_drso'] as $dia) {
+		$dia = (int) $dia;
+		if ($dia >= 1 and $dia <= 31) {
+			$insereDia->execute([':policial_id' => $policial_id, ':ano' => $ano_atual, ':mes' => $mes_atual, ':dia' => $dia]);
+		}
+	}
+}
 
 //criar acesso ao Painel do Policial (só no cadastro inicial)
 if ($id == "" and $criar_acesso == 'Sim' and $email_acesso != "") {

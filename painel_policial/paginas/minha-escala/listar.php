@@ -4,13 +4,13 @@ require_once("../../../conexao.php");
 
 $policial_id = @$_SESSION['id_ref'];
 
-$query = $pdo->prepare("SELECT em.id em_id, em.ciente, em.data_ciencia, ed.data_escala, ed.turno, ee.nome_equipe, f.nome funcao_nome
+$query = $pdo->prepare("SELECT em.id em_id, em.ciente, em.data_ciencia, ed.data_escala, ee.turno, ee.nome_equipe, f.nome funcao_nome
 	FROM escala_membros em
 	INNER JOIN escala_equipes ee ON ee.id = em.equipe_id
 	INNER JOIN escalas_diarias ed ON ed.id = ee.escala_id
 	INNER JOIN funcoes f ON f.id = em.funcao_na_escala_id
 	WHERE em.policial_id = :policial_id AND ed.status = 'Publicada'
-	ORDER BY ed.data_escala DESC, ed.turno ASC");
+	ORDER BY ed.data_escala DESC, ee.turno ASC");
 $query->bindValue(":policial_id", $policial_id);
 $query->execute();
 $res = $query->fetchAll(PDO::FETCH_ASSOC);

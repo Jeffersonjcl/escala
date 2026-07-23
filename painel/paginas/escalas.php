@@ -26,7 +26,7 @@ if ($id_escala != "") {
 			exit();
 		}
 
-		$query2 = $pdo->prepare("SELECT * from escala_equipes where escala_id = :id order by id asc");
+		$query2 = $pdo->prepare("SELECT * from escala_equipes where escala_id = :id order by turno asc, id asc");
 		$query2->bindValue(":id", $id_escala);
 		$query2->execute();
 		$equipes = $query2->fetchAll(PDO::FETCH_ASSOC);
@@ -60,12 +60,25 @@ if ($id_escala != "") {
 						<label>Data da Escala</label>
 						<input type="date" class="form-control" id="data_escala" <?php echo $escala_existente ? 'readonly' : '' ?>>
 					</div>
+					<div class="col-md-4 mb-2">
+						<label>Grupo de Serviço</label>
+						<?php $grupo_atual = $escala_existente ? $escala_existente['escala']['grupo'] : '' ?>
+						<select class="form-select" id="grupo_escala" <?php echo $escala_existente ? 'disabled' : '' ?>>
+							<option value="" <?php echo $grupo_atual == '' ? 'selected' : '' ?>>Selecione</option>
+							<option value="Alpha" <?php echo $grupo_atual == 'Alpha' ? 'selected' : '' ?>>Alpha</option>
+							<option value="Bravo" <?php echo $grupo_atual == 'Bravo' ? 'selected' : '' ?>>Bravo</option>
+						</select>
+					</div>
 					<div class="col-md-4 mb-2 d-flex align-items-end">
 						<button type="button" class="btn btn-primary" id="btn-carregar-efetivo" onclick="carregarEfetivoPronto()">
 							<i class="fa fa-magnifying-glass me-1"></i> Carregar Efetivo Pronto
 						</button>
 					</div>
 				</div>
+
+				<p class="text-muted mb-0" style="font-size:12px">
+					A escala é sempre por dia: o mesmo Grupo cobre o Turno A e o Turno B do dia escolhido.
+				</p>
 
 			</div>
 		</div>
@@ -109,8 +122,7 @@ if ($id_escala != "") {
 	var funcoesCadastradas = <?php echo json_encode($funcoes_cadastradas) ?>;
 	var escalaExistente = <?php echo $escala_existente ? json_encode($escala_existente) : 'null' ?>;
 	var idEscalaAtual = <?php echo $id_escala != "" ? $id_escala : 'null' ?>;
-	var turnoEdicao = <?php echo $escala_existente ? json_encode($escala_existente['escala']['turno']) : 'null' ?>;
 	var efetivoDisponivel = { A: [], B: [] };
 	var equipeContador = { A: 0, B: 0 };
 </script>
-<script src="js/escalas.js"></script>
+<script src="js/escalas.js?v=<?php echo filemtime(__DIR__ . '/../js/escalas.js') ?>"></script>

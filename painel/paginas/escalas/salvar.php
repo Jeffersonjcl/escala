@@ -14,12 +14,16 @@ $payload = json_decode($_POST['payload'], true);
 
 $id = @$payload['id'];
 $data_escala = $payload['data_escala'];
-$turno = $payload['turno'];
+$grupo = @$payload['grupo'];
 $equipes = $payload['equipes'];
 $status_desejado = $payload['status'];
 
-if ($data_escala == "" or $turno == "") {
-	responder('error', 'Informe a Data e o Turno da Escala!');
+if ($data_escala == "") {
+	responder('error', 'Informe a Data da Escala!');
+}
+
+if ($grupo == "" or !in_array($grupo, ['Alpha', 'Bravo'], true)) {
+	responder('error', 'Informe o Grupo de Serviço da Escala!');
 }
 
 if (count($equipes) == 0) {
@@ -28,6 +32,9 @@ if (count($equipes) == 0) {
 
 $policiais_no_payload = [];
 foreach ($equipes as $equipe) {
+	if (!in_array(@$equipe['turno'], ['A', 'B'], true)) {
+		responder('error', 'Toda equipe precisa ter um Turno válido (A ou B)!');
+	}
 	if (count($equipe['membros']) > 5) {
 		responder('error', 'A equipe "' . $equipe['nome_equipe'] . '" excede o limite de 05 membros!');
 	}
@@ -39,20 +46,20 @@ foreach ($equipes as $equipe) {
 	}
 }
 
-//checar duplo-agendamento (policial já escalado em outra escala na mesma data/turno)
+//checar duplo-agendamento (policial já escalado em outra equipe na mesma data, em qualquer turno)
 if (count($policiais_no_payload) > 0) {
 	$placeholders = implode(',', array_fill(0, count($policiais_no_payload), '?'));
 	$sql = "SELECT DISTINCT p.nome_guerra FROM escala_membros em
 		INNER JOIN escala_equipes ee ON ee.id = em.equipe_id
 		INNER JOIN escalas_diarias ed ON ed.id = ee.escala_id
 		INNER JOIN policiais p ON p.id = em.policial_id
-		WHERE ed.data_escala = ? AND ed.turno = ? AND ed.id != ? AND em.policial_id IN ($placeholders)";
+		WHERE ed.data_escala = ? AND ed.id != ? AND em.policial_id IN ($placeholders)";
 	$stmt = $pdo->prepare($sql);
-	$stmt->execute(array_merge([$data_escala, $turno, $id ?: 0], $policiais_no_payload));
+	$stmt->execute(array_merge([$data_escala, $id ?: 0], $policiais_no_payload));
 	$conflitos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	if (count($conflitos) > 0) {
 		$nomes = implode(', ', array_column($conflitos, 'nome_guerra'));
-		responder('error', 'Policial(is) já escalado(s) em outra equipe na mesma data/turno: ' . $nomes);
+		responder('error', 'Policial(is) já escalado(s) em outra equipe na mesma data (outro turno): ' . $nomes);
 	}
 }
 
@@ -72,8 +79,8 @@ try {
 			throw new Exception('Essa escala já foi publicada e não pode ser editada!');
 		}
 
-		$pdo->prepare("UPDATE escalas_diarias SET data_escala = :data_escala, turno = :turno WHERE id = :id")
-			->execute([':data_escala' => $data_escala, ':turno' => $turno, ':id' => $id]);
+		$pdo->prepare("UPDATE escalas_diarias SET data_escala = :data_escala, grupo = :grupo WHERE id = :id")
+			->execute([':data_escala' => $data_escala, ':grupo' => $grupo, ':id' => $id]);
 
 		$pdo->prepare("DELETE FROM escala_equipes WHERE escala_id = :id")->execute([':id' => $id]);
 
@@ -81,22 +88,23 @@ try {
 	} else {
 		$id_usuario = @$_SESSION['id'];
 
-		$query = $pdo->prepare("SELECT id from escalas_diarias where data_escala = :data_escala and turno = :turno");
-		$query->execute([':data_escala' => $data_escala, ':turno' => $turno]);
+		$query = $pdo->prepare("SELECT id from escalas_diarias where data_escala = :data_escala");
+		$query->execute([':data_escala' => $data_escala]);
 		if ($query->fetch()) {
-			throw new Exception('Já existe uma Escala cadastrada para essa Data e Turno!');
+			throw new Exception('Já existe uma Escala cadastrada para essa Data!');
 		}
 
-		$pdo->prepare("INSERT INTO escalas_diarias SET data_escala = :data_escala, turno = :turno, status = 'Rascunho', criado_por = :criado_por")
-			->execute([':data_escala' => $data_escala, ':turno' => $turno, ':criado_por' => $id_usuario ?: null]);
+		$pdo->prepare("INSERT INTO escalas_diarias SET data_escala = :data_escala, grupo = :grupo, status = 'Rascunho', criado_por = :criado_por")
+			->execute([':data_escala' => $data_escala, ':grupo' => $grupo, ':criado_por' => $id_usuario ?: null]);
 
 		$escala_id = $pdo->lastInsertId();
 	}
 
 	foreach ($equipes as $equipe) {
-		$pdo->prepare("INSERT INTO escala_equipes SET escala_id = :escala_id, nome_equipe = :nome_equipe, viatura = :viatura, horario_inicio = :horario_inicio, horario_fim = :horario_fim, area_atuacao = :area_atuacao")
+		$pdo->prepare("INSERT INTO escala_equipes SET escala_id = :escala_id, turno = :turno, nome_equipe = :nome_equipe, viatura = :viatura, horario_inicio = :horario_inicio, horario_fim = :horario_fim, area_atuacao = :area_atuacao")
 			->execute([
 				':escala_id' => $escala_id,
+				':turno' => $equipe['turno'],
 				':nome_equipe' => $equipe['nome_equipe'],
 				':viatura' => @$equipe['viatura'],
 				':horario_inicio' => @$equipe['horario_inicio'] ?: null,

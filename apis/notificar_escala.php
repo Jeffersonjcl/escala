@@ -2,7 +2,7 @@
 
 function notificarEscalaPublicada($pdo, $escala_id, $token, $instancia, $nome_sistema, $url_sistema) {
 
-	$query = $pdo->prepare("SELECT ed.data_escala, ed.turno, ee.nome_equipe, p.nome_guerra, p.telefone, f.nome funcao_nome
+	$query = $pdo->prepare("SELECT ed.data_escala, ee.turno, ee.nome_equipe, p.nome_guerra, p.telefone, f.nome funcao_nome
 		FROM escala_membros em
 		INNER JOIN escala_equipes ee ON ee.id = em.equipe_id
 		INNER JOIN escalas_diarias ed ON ed.id = ee.escala_id
