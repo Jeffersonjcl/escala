@@ -126,6 +126,23 @@ $funcoes_cadastradas = $query->fetchAll(PDO::FETCH_ASSOC);
 						</div>
 					</div>
 
+					<div class="row" id="campoPeriodoIndispo" style="display:none">
+						<div class="col-md-4 mb-2">
+							<label>Início da Indisponibilidade</label>
+							<input type="date" class="form-control" id="indispo_data_inicio" name="indispo_data_inicio">
+						</div>
+
+						<div class="col-md-4 mb-2">
+							<label>Total de Dias</label>
+							<input type="number" min="1" step="1" class="form-control" id="indispo_dias" name="indispo_dias" placeholder="Ex: 30">
+						</div>
+
+						<div class="col-md-4 mb-2">
+							<label>Previsão de Retorno</label>
+							<input type="text" class="form-control" id="indispo_previsao_retorno" placeholder="—" readonly>
+						</div>
+					</div>
+
 					<hr>
 
 					<div class="row" id="linhaCriarAcesso">
@@ -166,15 +183,70 @@ $funcoes_cadastradas = $query->fetchAll(PDO::FETCH_ASSOC);
 <script src="js/ajax.js"></script>
 
 <script type="text/javascript">
+	// O nicEdit (nicEditors.allTextAreas) esconde o textarea #motivo_indispo e só
+	// copia o conteúdo para ele no submit nativo. Como o textarea fica required e
+	// oculto, a validação nativa bloqueia o submit antes desse sync (impasse).
+	// Estes helpers sincronizam o editor e o textarea nos dois sentidos.
+	function editorMotivo() {
+		return (typeof nicEditors !== 'undefined') ? nicEditors.findEditor('motivo_indispo') : null;
+	}
+
+	function sincronizarMotivoEditor() {
+		var ed = editorMotivo();
+		if (!ed) return;
+		ed.saveContent();
+		var txt = $('#motivo_indispo').val();
+		if (txt.replace(/<br\s*\/?>|&nbsp;|<\/?[^>]+>|\s+/gi, '') === '') {
+			$('#motivo_indispo').val('');
+		}
+	}
+
+	function carregarMotivoEditor(html) {
+		$('#motivo_indispo').val(html || '');
+		var ed = editorMotivo();
+		if (ed) ed.setContent(html || '');
+	}
+
+	// Copia o conteúdo do editor para o textarea antes da validação/submit nativo.
+	$(document).on('mousedown', '#btn_salvar', sincronizarMotivoEditor);
+
 	$('#disponivel').change(function() {
 		if ($(this).val() == '0') {
 			$('#campoMotivo').fadeIn();
+			$('#campoPeriodoIndispo').fadeIn();
 			$('#motivo_indispo').attr('required', true);
 		} else {
-			$('#campoMotivo').fadeOut().find('textarea').val('');
+			$('#campoMotivo').fadeOut();
+			carregarMotivoEditor('');
+			$('#campoPeriodoIndispo').fadeOut();
+			$('#indispo_data_inicio').val('');
+			$('#indispo_dias').val('');
 			$('#motivo_indispo').attr('required', false);
+			calcularPrevisaoRetorno();
 		}
 	});
+
+	function calcularPrevisaoRetorno() {
+		var inicio = $('#indispo_data_inicio').val();
+		var dias = parseInt($('#indispo_dias').val(), 10);
+
+		if (!inicio || isNaN(dias) || dias < 1) {
+			$('#indispo_previsao_retorno').val('');
+			return;
+		}
+
+		var partes = inicio.split('-');
+		var data = new Date(partes[0], partes[1] - 1, partes[2]);
+		data.setDate(data.getDate() + dias);
+
+		var dd = String(data.getDate()).padStart(2, '0');
+		var mm = String(data.getMonth() + 1).padStart(2, '0');
+		var aaaa = data.getFullYear();
+
+		$('#indispo_previsao_retorno').val(dd + '/' + mm + '/' + aaaa);
+	}
+
+	$('#indispo_data_inicio, #indispo_dias').on('input change', calcularPrevisaoRetorno);
 
 	$('#criar_acesso').change(function() {
 		if ($(this).is(':checked')) {

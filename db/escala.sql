@@ -185,6 +185,8 @@ CREATE TABLE `policiais` (
   `foto` varchar(150) DEFAULT 'sem-foto.jpg',
   `disponivel` tinyint(1) NOT NULL DEFAULT 1,
   `motivo_indispo` text DEFAULT NULL,
+  `indispo_data_inicio` date DEFAULT NULL,
+  `indispo_dias` int(11) DEFAULT NULL,
   `data_cadastro` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
