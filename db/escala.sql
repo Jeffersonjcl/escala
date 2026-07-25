@@ -103,6 +103,7 @@ CREATE TABLE `config` (
   `logo` varchar(100) DEFAULT NULL,
   `icone` varchar(100) DEFAULT NULL,
   `logo_rel` varchar(100) DEFAULT NULL,
+  `logo_rel2` varchar(100) DEFAULT NULL,
   `id` int(11) NOT NULL,
   `validade_orcamento` int(11) DEFAULT NULL,
   `excluir_orcamentos` int(11) DEFAULT NULL,
@@ -132,8 +133,8 @@ CREATE TABLE `config` (
   `ano_atual` year(4) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
-INSERT INTO `config` (`nome`, `email`, `telefone`, `endereco`, `instagram`, `logo`, `icone`, `logo_rel`, `id`, `validade_orcamento`, `excluir_orcamentos`, `comissao_geral`, `api_whatsapp`, `token`, `instancia`, `marca_dagua`, `chave_pix`, `impressao_automatica`, `fonte_comprovante`, `cnpj`, `dias_comissao`, `cobranca_auto`, `data_cobranca`, `duas_vias_os`, `msg_rodape`, `garantia`, `termos`, `logo_painel`, `ativo`, `entrar_automatico`, `mostrar_preloader`, `mensagem_auto`, `abertura_caixa`, `contador`, `ano_atual`) VALUES
-('1º BPRAIO - 1ª Cia - 1º Pelotão', 'jeffersonjcl@gmail.com', '(85) 99985-5584', 'Sobral-CE', '', 'logo.png', 'icone.png', 'logo.jpg', 1, 0, 0, 0, 'Não', '', '', 'Sim', '', 'Não', 12, '', 0, 'Não', NULL, 'Não', '', '', '', 'logo_painel.png', 'Sim', 'Sim', 'Sim', 'Não', 'Não', 0, '2026');
+INSERT INTO `config` (`nome`, `email`, `telefone`, `endereco`, `instagram`, `logo`, `icone`, `logo_rel`, `logo_rel2`, `id`, `validade_orcamento`, `excluir_orcamentos`, `comissao_geral`, `api_whatsapp`, `token`, `instancia`, `marca_dagua`, `chave_pix`, `impressao_automatica`, `fonte_comprovante`, `cnpj`, `dias_comissao`, `cobranca_auto`, `data_cobranca`, `duas_vias_os`, `msg_rodape`, `garantia`, `termos`, `logo_painel`, `ativo`, `entrar_automatico`, `mostrar_preloader`, `mensagem_auto`, `abertura_caixa`, `contador`, `ano_atual`) VALUES
+('1º BPRAIO - 1ª Cia - 1º Pelotão', 'jeffersonjcl@gmail.com', '(85) 99985-5584', 'Sobral-CE', '', 'logo.png', 'icone.png', 'logo.jpg', 'logo_rel2.jpg', 1, 0, 0, 0, 'Não', '', '', 'Sim', '', 'Não', 12, '', 0, 'Não', NULL, 'Não', '', '', '', 'logo_painel.png', 'Sim', 'Sim', 'Sim', 'Não', 'Não', 0, '2026');
 
 ALTER TABLE `config` ADD PRIMARY KEY (`id`);
 ALTER TABLE `config` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;

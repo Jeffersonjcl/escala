@@ -792,6 +792,23 @@ if ($linhas > 0) {
 
                     <div class="row">
 
+                        <div class="col-md-4 offset-md-6">
+                            <div class="form-group">
+                                <label>Logo Relatório 2 (Direita) (*Jpg)</label>
+                                <input class="form-control" type="file" name="foto-logo-rel2" onChange="carregarImgLogoRel2();" id="foto-logo-rel2">
+                                <small class="text-muted">Aparece no canto superior direito da escala em PDF.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div id="divImg">
+                                <img src="../img/<?php echo @$logo_rel2 ?>" width="80px" id="target-logo-rel2" style="background:#f5f5f5; margin-top: 30px;" onerror="this.style.visibility='hidden'">
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label>Logo Painel (Clara) (*Png)</label>
@@ -998,6 +1015,25 @@ if ($linhas > 0) {
         var reader = new FileReader();
 
         reader.onloadend = function() {
+            target.src = reader.result;
+        };
+
+        if (file) {
+            reader.readAsDataURL(file);
+
+        } else {
+            target.src = "";
+        }
+    }
+
+    function carregarImgLogoRel2() {
+        var target = document.getElementById('target-logo-rel2');
+        var file = document.querySelector("#foto-logo-rel2").files[0];
+
+        var reader = new FileReader();
+
+        reader.onloadend = function() {
+            target.style.visibility = 'visible';
             target.src = reader.result;
         };
 

@@ -52,6 +52,22 @@ if(@$_FILES['foto-logo-rel']['name'] != ""){
 }
 
 
+//foto logo rel 2 (canto superior direito do relatório)
+$caminho = '../img/logo_rel2.jpg';
+$imagem_temp = @$_FILES['foto-logo-rel2']['tmp_name'];
+
+if(@$_FILES['foto-logo-rel2']['name'] != ""){
+	$ext = pathinfo(@$_FILES['foto-logo-rel2']['name'], PATHINFO_EXTENSION);
+	if($ext == 'jpg'){
+
+		move_uploaded_file($imagem_temp, $caminho);
+	}else{
+		echo 'Extensão de Imagem não permitida!';
+		exit();
+	}
+}
+
+
 //foto icone
 $caminho = '../img/icone.png';
 $imagem_temp = @$_FILES['foto-icone']['tmp_name']; 

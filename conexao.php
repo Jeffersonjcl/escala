@@ -44,6 +44,7 @@ $endereco_sistema = 'Rua Seis, 8, Ap 404, Fortaleza-CE';
 $instagram_sistema = 'jeffersonjcl';
 $logo_sistema = 'logo.png';
 $logo_rel = 'logo.jpg';
+$logo_rel2 = 'logo_rel2.jpg';
 $icone_sistema = 'icone.png';
 $api_whatsapp = 'Não';
 $token = '';
@@ -67,7 +68,7 @@ $query = $pdo->query("SELECT * from config");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if ($linhas == 0) {
-	$pdo->query("INSERT INTO config SET nome = '$nome_sistema', email = '$email_sistema', telefone = '$telefone_sistema', logo = 'logo.png', logo_rel = 'logo.jpg', logo_painel = 'logo_painel.png', icone = 'icone.png', api_whatsapp = 'Não', marca_dagua = 'Sim', impressao_automatica = 'Não', fonte_comprovante = '12', cobranca_auto = 'Não', ativo = 'Sim', mostrar_preloader = 'Sim', mensagem_auto = 'Sim'");
+	$pdo->query("INSERT INTO config SET nome = '$nome_sistema', email = '$email_sistema', telefone = '$telefone_sistema', logo = 'logo.png', logo_rel = 'logo.jpg', logo_rel2 = 'logo_rel2.jpg', logo_painel = 'logo_painel.png', icone = 'icone.png', api_whatsapp = 'Não', marca_dagua = 'Sim', impressao_automatica = 'Não', fonte_comprovante = '12', cobranca_auto = 'Não', ativo = 'Sim', mostrar_preloader = 'Sim', mensagem_auto = 'Sim'");
 } else {
 	$nome_sistema = $res[0]['nome'];
 	$email_sistema = $res[0]['email'];
@@ -76,6 +77,8 @@ if ($linhas == 0) {
 	$instagram_sistema = $res[0]['instagram'];
 	$logo_sistema = $res[0]['logo'];
 	$logo_rel = $res[0]['logo_rel'];
+	//coluna adicionada depois: instalações antigas ainda podem estar sem ela
+	$logo_rel2 = @$res[0]['logo_rel2'] ?: 'logo_rel2.jpg';
 	$icone_sistema = $res[0]['icone'];
 	$api_whatsapp = $res[0]['api_whatsapp'];
 	$token = $res[0]['token'];
