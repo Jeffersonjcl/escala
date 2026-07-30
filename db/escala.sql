@@ -234,24 +234,34 @@ CREATE TABLE `escalas_diarias` (
   `status` enum('Rascunho','Publicada') NOT NULL DEFAULT 'Rascunho',
   `assinado_escalante` tinyint(1) NOT NULL DEFAULT 0,
   `escalante_id` int(11) DEFAULT NULL,
+  `escalante_policial_id` int(11) DEFAULT NULL,
   `data_assinatura_escalante` datetime DEFAULT NULL,
   `assinado_comandante` tinyint(1) NOT NULL DEFAULT 0,
   `comandante_id` int(11) DEFAULT NULL,
+  `comandante_policial_id` int(11) DEFAULT NULL,
   `data_assinatura_comandante` datetime DEFAULT NULL,
   `criado_por` int(11) DEFAULT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+-- escalante_id / comandante_id: usuário (login) que efetivamente assinou eletronicamente, preenchido por assinar.php
+-- escalante_policial_id / comandante_policial_id: policial pré-selecionado ao criar a escala
+-- (comandante restrito a Cel/Ten Cel/Major/Capitão/1ºTen/2ºTen), usado para exibir nome/posto/matrícula
+-- no PDF antes da assinatura eletrônica real
 
 ALTER TABLE `escalas_diarias`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uq_data_escala` (`data_escala`),
   ADD KEY `fk_escalas_escalante` (`escalante_id`),
+  ADD KEY `fk_escalas_escalante_policial` (`escalante_policial_id`),
   ADD KEY `fk_escalas_comandante` (`comandante_id`),
+  ADD KEY `fk_escalas_comandante_policial` (`comandante_policial_id`),
   ADD KEY `fk_escalas_criador` (`criado_por`);
 ALTER TABLE `escalas_diarias` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 ALTER TABLE `escalas_diarias`
   ADD CONSTRAINT `fk_escalas_escalante` FOREIGN KEY (`escalante_id`) REFERENCES `usuarios` (`id`),
+  ADD CONSTRAINT `fk_escalas_escalante_policial` FOREIGN KEY (`escalante_policial_id`) REFERENCES `policiais` (`id`),
   ADD CONSTRAINT `fk_escalas_comandante` FOREIGN KEY (`comandante_id`) REFERENCES `usuarios` (`id`),
+  ADD CONSTRAINT `fk_escalas_comandante_policial` FOREIGN KEY (`comandante_policial_id`) REFERENCES `policiais` (`id`),
   ADD CONSTRAINT `fk_escalas_criador` FOREIGN KEY (`criado_por`) REFERENCES `usuarios` (`id`);
 
 -- --------------------------------------------------------

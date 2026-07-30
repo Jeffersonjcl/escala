@@ -7,10 +7,16 @@ use Dompdf\Options;
 
 $id = $_GET['id'];
 
-$query = $pdo->prepare("SELECT ed.*, ue.nome nome_escalante, uc.nome nome_comandante
+$query = $pdo->prepare("SELECT ed.*, ue.nome nome_escalante, uc.nome nome_comandante,
+		pe.nome_completo nome_completo_escalante_esperado, pe.matricula matricula_escalante_esperado, poe.nome posto_escalante_esperado,
+		pc.nome_completo nome_completo_comandante_esperado, pc.matricula matricula_comandante_esperado, poc.nome posto_comandante_esperado
 	FROM escalas_diarias ed
 	LEFT JOIN usuarios ue ON ue.id = ed.escalante_id
 	LEFT JOIN usuarios uc ON uc.id = ed.comandante_id
+	LEFT JOIN policiais pe ON pe.id = ed.escalante_policial_id
+	LEFT JOIN postos poe ON poe.id = pe.posto_id
+	LEFT JOIN policiais pc ON pc.id = ed.comandante_policial_id
+	LEFT JOIN postos poc ON poc.id = pc.posto_id
 	WHERE ed.id = :id");
 $query->bindValue(":id", $id);
 $query->execute();
@@ -57,12 +63,36 @@ $abrev_posto = [
 	'2º sargento pm' => '2SGT',
 	'1º sargento pm' => '1SGT',
 	'subtenente pm' => 'ST',
-	'2º tenente pm' => '2TEN',
-	'1º tenente pm' => '1TEN',
-	'capitão pm' => 'CAP',
-	'major pm' => 'MAJ',
-	'tenente coronel pm' => 'TC',
-	'coronel pm' => 'CEL'
+	'2º tenente qopm' => '2TEN',
+	'2º tenente qoapm' => '2TEN',
+	'1º tenente qopm' => '1TEN',
+	'1º tenente qoapm' => '1TEN',
+	'capitão qopm' => 'CAP',
+	'capitão qoapm' => 'CAP',
+	'major qopm' => 'MAJ',
+	'major qoapm' => 'MAJ',
+	'tenente coronel qopm' => 'TC',
+	'coronel qopm' => 'CEL'
+];
+
+//abreviação de posto usada na linha de assinatura (mais espaçada que a da caixa de equipe)
+$abrev_posto_assinatura = [
+	'soldado pm' => 'SD',
+	'cabo pm' => 'CB',
+	'3º sargento pm' => '3º SGT',
+	'2º sargento pm' => '2º SGT',
+	'1º sargento pm' => '1º SGT',
+	'subtenente pm' => 'SUBTEN',
+	'2º tenente qopm' => '2º TEN',
+	'2º tenente qoapm' => '2º TEN',
+	'1º tenente qopm' => '1º TEN',
+	'1º tenente qoapm' => '1º TEN',
+	'capitão qopm' => 'CAP',
+	'capitão qoapm' => 'CAP',
+	'major qopm' => 'MAJ',
+	'major qoapm' => 'MAJ',
+	'tenente coronel qopm' => 'TEN CEL',
+	'coronel qopm' => 'CEL'
 ];
 
 function abreviar($nome, $mapa) {
@@ -87,7 +117,30 @@ $query_membros = $pdo->prepare("SELECT p.nome_guerra, p.matricula, p.telefone, p
 	INNER JOIN policiais p ON p.id = em.policial_id
 	INNER JOIN funcoes f ON f.id = em.funcao_na_escala_id
 	LEFT JOIN postos po ON po.id = p.posto_id
-	WHERE em.equipe_id = :equipe_id ORDER BY f.id ASC, p.nome_guerra ASC");
+	WHERE em.equipe_id = :equipe_id ORDER BY CASE LOWER(f.nome)
+			WHEN 'comandante' THEN 1
+			WHEN 'comandante de equipe' THEN 1
+			WHEN '2º homem' THEN 2
+			WHEN '3º homem' THEN 3
+			WHEN 'garupa' THEN 4
+			WHEN 'atirador' THEN 4
+			WHEN '5º homem' THEN 5
+			WHEN 'sub comandante' THEN 6
+			WHEN 'subcomandante' THEN 6
+			WHEN 'motorista' THEN 7
+			WHEN 'piloto' THEN 7
+			WHEN '1º patrulheiro' THEN 8
+			WHEN '2º patrulheiro' THEN 8
+			WHEN 'patrulheiro' THEN 8
+			WHEN 'permanente' THEN 9
+			WHEN 'sai' THEN 10
+			WHEN 'auxiliar do p1' THEN 11
+			WHEN 'auxiliar do p4' THEN 12
+			WHEN 'escalante' THEN 13
+			WHEN 'reserva de armamento' THEN 14
+			WHEN 'rancheiro' THEN 15
+			ELSE 16
+		END, p.nome_guerra ASC");
 
 //separa as equipes por turno já carregando os membros de cada uma
 $turnos = [];
@@ -194,30 +247,63 @@ function montarGrade($caixas) {
 	return $html;
 }
 
-function assinaturaTexto($assinado, $nome, $data) {
+//monta o bloco de assinatura no padrão: linha, NOME - POSTO QOPM, CARGO DA 3ª CIA/1º BPRAIO, M.F Nº matrícula
+function assinaturaBloco($assinado, $data, $nome_login, $nome_completo, $posto_nome, $matricula, $prefixo_cargo, $abrev_posto_assinatura) {
+	$linha = '<div class="linha-assinatura">&nbsp;</div>';
+
+	$nome_exibido = $nome_completo ?: $nome_login;
+	if (empty($nome_exibido)) {
+		return $linha;
+	}
+
+	//QOPM/QOAPM é só para oficiais (Cel, Ten Cel, Major, Capitão, 1º/2º Ten); SubTen, Sgt, Cabo e Soldado são PM
+	//o quadro exibido (QOPM ou QOAPM) segue o posto cadastrado do policial, não é fixo
+	$posto_chave = mb_strtolower(trim($posto_nome ?? ''), 'UTF-8');
+	if (str_ends_with($posto_chave, 'qoapm')) {
+		$quadro = 'QOAPM';
+	} elseif (str_ends_with($posto_chave, 'qopm')) {
+		$quadro = 'QOPM';
+	} else {
+		$quadro = 'PM';
+	}
+
+	$linha_nome = mb_strtoupper($nome_exibido, 'UTF-8');
+	$posto_abrev = $nome_completo ? abreviar($posto_nome, $abrev_posto_assinatura) : '';
+	if ($posto_abrev) {
+		$linha_nome .= ' - ' . $posto_abrev . ' ' . $quadro;
+	}
+
+	$html = $linha . '<div class="assinante">' . htmlspecialchars($linha_nome) . '</div>';
+	$html .= '<div class="cargo">' . htmlspecialchars($prefixo_cargo) . ' DA 3ª CIA/1º BPRAIO</div>';
+	if (!empty($matricula)) {
+		$html .= '<div class="unidade-cargo">M.F Nº ' . htmlspecialchars($matricula) . '</div>';
+	}
 	if ($assinado) {
 		$dataFmt = date('d/m/Y H:i', strtotime($data));
-		return '<div class="assinado">DOCUMENTO ASSINADO ELETRONICAMENTE VIA SISTEMA DE ESCALA INTERNA EM ' . $dataFmt . '</div>
-			<div class="assinante">' . htmlspecialchars($nome ?? '') . '</div>';
+		$html .= '<div class="assinado">DOCUMENTO ASSINADO ELETRONICAMENTE VIA SISTEMA DE ESCALA INTERNA EM ' . $dataFmt . '</div>';
 	}
-	return '<div class="linha-assinatura">&nbsp;</div>';
+	return $html;
 }
 
-$assinatura_escalante = assinaturaTexto($escala['assinado_escalante'], $escala['nome_escalante'], $escala['data_assinatura_escalante']);
-$assinatura_comandante = assinaturaTexto($escala['assinado_comandante'], $escala['nome_comandante'], $escala['data_assinatura_comandante']);
+$assinatura_escalante = assinaturaBloco(
+	$escala['assinado_escalante'], $escala['data_assinatura_escalante'], $escala['nome_escalante'],
+	$escala['nome_completo_escalante_esperado'], $escala['posto_escalante_esperado'], $escala['matricula_escalante_esperado'],
+	'ESCALANTE', $abrev_posto_assinatura
+);
+$assinatura_comandante = assinaturaBloco(
+	$escala['assinado_comandante'], $escala['data_assinatura_comandante'], $escala['nome_comandante'],
+	$escala['nome_completo_comandante_esperado'], $escala['posto_comandante_esperado'], $escala['matricula_comandante_esperado'],
+	'CMT', $abrev_posto_assinatura
+);
 
 $rodape = '
 <table class="assinaturas">
 	<tr>
 		<td width="50%">
 			' . $assinatura_escalante . '
-			<div class="cargo">ESCALANTE</div>
-			<div class="unidade-cargo">1º Pel / 1ª Cia / 1º BPRAIO</div>
 		</td>
 		<td width="50%">
 			' . $assinatura_comandante . '
-			<div class="cargo">COMANDANTE DA 1ª CIA</div>
-			<div class="unidade-cargo">1º BPRAIO</div>
 		</td>
 	</tr>
 </table>';
@@ -280,7 +366,7 @@ $html_conteudo = '
 <meta charset="utf-8">
 <style>
 	@page { margin: 22px 18px; }
-	body { font-family: Arial, Helvetica, sans-serif; font-size: 8px; color: #000; }
+	body { font-family: "DejaVu Sans", sans-serif; font-size: 8px; color: #000; }
 
 	.quebra { page-break-before: always; }
 
@@ -327,16 +413,16 @@ $html_conteudo = '
 	table.assinaturas td { vertical-align: bottom; padding: 0 10px; }
 	.linha-assinatura { border-bottom: 0.6pt solid #000; margin: 0 20px 3px 20px; height: 22px; }
 	.assinado { font-size: 6px; color: #444; }
-	.assinante { font-size: 8px; font-weight: bold; border-top: 0.6pt solid #000; margin: 2px 20px 0 20px; padding-top: 2px; }
+	.assinante { font-size: 8px; font-weight: bold; margin: 2px 20px 0 20px; padding-top: 2px; }
 	.cargo { font-size: 8px; font-weight: bold; }
-	.unidade-cargo { font-size: 7px; color: #333; }
+	.unidade-cargo { font-size: 8px; font-weight: bold; color: #333; }
 </style>
 </head>
 <body>' . $paginas . '</body>
 </html>';
 
 $options = new Options();
-$options->set('defaultFont', 'Arial');
+$options->set('defaultFont', 'DejaVu Sans');
 $options->set('isHtml5ParserEnabled', true);
 $options->set('chroot', realpath(__DIR__ . '/../../'));
 $dompdf = new Dompdf($options);

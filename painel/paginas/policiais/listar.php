@@ -3,7 +3,27 @@ require_once(__DIR__ . '/../_guard.php');
 $tabela = 'policiais';
 require_once("../../../conexao.php");
 
-$query = $pdo->query("SELECT p.*, f.nome funcao_nome, po.nome posto_nome FROM $tabela p INNER JOIN funcoes f ON f.id = p.funcao_id LEFT JOIN postos po ON po.id = p.posto_id ORDER BY p.nome_guerra ASC");
+$query = $pdo->query("SELECT p.*, f.nome funcao_nome, po.nome posto_nome FROM $tabela p INNER JOIN funcoes f ON f.id = p.funcao_id LEFT JOIN postos po ON po.id = p.posto_id ORDER BY CASE po.nome
+	WHEN 'Coronel PM' THEN 1
+	WHEN 'Tenente Coronel PM' THEN 2
+	WHEN 'Tenente Coronel QOPM' THEN 3
+	WHEN 'Tenente Coronel QOAPM' THEN 4
+	WHEN 'Major QOPM' THEN 5
+	WHEN 'Major QOAPM' THEN 6
+	WHEN 'Capitão QOPM' THEN 7
+	WHEN 'Capitão QOAPM' THEN 8
+	WHEN '1º Tenente QOPM' THEN 9
+	WHEN '1º Tenente QOAPM' THEN 10
+	WHEN '2º Tenente QOPM' THEN 11
+	WHEN '2º Tenente QOAPM' THEN 12
+	WHEN 'SubTenente PM' THEN 13
+	WHEN '1º Sargento PM' THEN 14
+	WHEN '2º Sargento PM' THEN 15
+	WHEN '3º Sargento PM' THEN 16
+	WHEN 'Cabo PM' THEN 17
+	WHEN 'Soldado PM' THEN 18
+	ELSE 19
+END, (p.numeral IS NULL OR p.numeral = '') ASC, CAST(NULLIF(p.numeral, '') AS UNSIGNED) ASC, p.nome_guerra ASC");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if ($linhas > 0) {
@@ -14,8 +34,8 @@ if ($linhas > 0) {
 	<tr>
 	<th align="center" width="5%" class="text-center">Selecionar</th>
 	<th>Foto</th>
-	<th>Nome de Guerra</th>
 	<th>Posto/Grad.</th>
+	<th>Nome de Guerra</th>
 	<th>Grupo</th>
 	<th>Turno</th>
 	<th>Função</th>
@@ -82,8 +102,8 @@ for ($i = 0; $i < $linhas; $i++) {
 </div>
 </td>
 <td><img src="images/perfil/{$foto}" width="30px" style="border-radius:50%"></td>
-<td>{$nome_guerra}</td>
 <td>{$posto_display}</td>
+<td>{$nome_guerra}</td>
 <td>{$grupo_display}</td>
 <td>{$turno_display}</td>
 <td>{$funcao_nome}</td>

@@ -5,6 +5,14 @@ require_once("_helpers.php");
 @session_start();
 header('Content-Type: application/json; charset=utf-8');
 
+/** @var string $status */
+/** @var string $message */
+/** @var array $api_whatsapp */
+/** @var string $token */
+/** @var string $instancia */
+/** @var string $nome_sistema */
+/** @var string $url_sistema */
+
 function responder($status, $message) {
 	echo json_encode(['status' => $status, 'message' => $message]);
 	exit();
@@ -15,6 +23,8 @@ $payload = json_decode($_POST['payload'], true);
 $id = @$payload['id'];
 $data_escala = $payload['data_escala'];
 $grupo = @$payload['grupo'];
+$escalante_policial_id = @$payload['escalante_policial_id'] ?: null;
+$comandante_policial_id = @$payload['comandante_policial_id'] ?: null;
 $equipes = $payload['equipes'];
 $status_desejado = $payload['status'];
 
@@ -24,6 +34,31 @@ if ($data_escala == "") {
 
 if ($grupo == "" or !in_array($grupo, ['Alpha', 'Bravo'], true)) {
 	responder('error', 'Informe o Grupo de Serviço da Escala!');
+}
+
+//escalante precisa ter a função "Escalante" atribuída em Policiais
+if ($escalante_policial_id) {
+	$query = $pdo->prepare("SELECT p.id FROM policiais p
+		INNER JOIN funcoes f ON f.id = p.funcao_id
+		WHERE p.id = :id AND f.nome = 'Escalante'");
+	$query->bindValue(":id", $escalante_policial_id);
+	$query->execute();
+	if (!$query->fetch()) {
+		responder('error', 'O Escalante selecionado precisa ter a função "Escalante" atribuída no cadastro de Policiais!');
+	}
+}
+
+//comandante precisa ser um oficial: postos QOPM/QOAPM
+if ($comandante_policial_id) {
+	$query = $pdo->prepare("SELECT po.nome FROM policiais p
+		INNER JOIN postos po ON po.id = p.posto_id
+		WHERE p.id = :id
+		AND (LOWER(po.nome) LIKE '%qopm' OR LOWER(po.nome) LIKE '%qoapm')");
+	$query->bindValue(":id", $comandante_policial_id);
+	$query->execute();
+	if (!$query->fetch()) {
+		responder('error', 'O Comandante selecionado precisa ser um oficial (Cel, Ten Cel, Major, Capitão ou Tenente)!');
+	}
 }
 
 if (count($equipes) == 0) {
@@ -79,8 +114,8 @@ try {
 			throw new Exception('Essa escala já foi publicada e não pode ser editada!');
 		}
 
-		$pdo->prepare("UPDATE escalas_diarias SET data_escala = :data_escala, grupo = :grupo WHERE id = :id")
-			->execute([':data_escala' => $data_escala, ':grupo' => $grupo, ':id' => $id]);
+		$pdo->prepare("UPDATE escalas_diarias SET data_escala = :data_escala, grupo = :grupo, escalante_policial_id = :escalante_policial_id, comandante_policial_id = :comandante_policial_id WHERE id = :id")
+			->execute([':data_escala' => $data_escala, ':grupo' => $grupo, ':escalante_policial_id' => $escalante_policial_id, ':comandante_policial_id' => $comandante_policial_id, ':id' => $id]);
 
 		$pdo->prepare("DELETE FROM escala_equipes WHERE escala_id = :id")->execute([':id' => $id]);
 
@@ -94,8 +129,8 @@ try {
 			throw new Exception('Já existe uma Escala cadastrada para essa Data!');
 		}
 
-		$pdo->prepare("INSERT INTO escalas_diarias SET data_escala = :data_escala, grupo = :grupo, status = 'Rascunho', criado_por = :criado_por")
-			->execute([':data_escala' => $data_escala, ':grupo' => $grupo, ':criado_por' => $id_usuario ?: null]);
+		$pdo->prepare("INSERT INTO escalas_diarias SET data_escala = :data_escala, grupo = :grupo, status = 'Rascunho', criado_por = :criado_por, escalante_policial_id = :escalante_policial_id, comandante_policial_id = :comandante_policial_id")
+			->execute([':data_escala' => $data_escala, ':grupo' => $grupo, ':criado_por' => $id_usuario ?: null, ':escalante_policial_id' => $escalante_policial_id, ':comandante_policial_id' => $comandante_policial_id]);
 
 		$escala_id = $pdo->lastInsertId();
 	}

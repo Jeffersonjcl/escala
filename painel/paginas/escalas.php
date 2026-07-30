@@ -10,6 +10,24 @@ if (@$escalas == 'ocultar') {
 $query = $pdo->query("SELECT * from funcoes order by nome asc");
 $funcoes_cadastradas = $query->fetchAll(PDO::FETCH_ASSOC);
 
+//escalante precisa ter a função "Escalante" atribuída em Policiais
+//selecionado direto da lista de Policiais, sem precisar ter login no sistema
+$query = $pdo->query("SELECT p.id, p.nome_guerra, po.nome posto_nome FROM policiais p
+	INNER JOIN funcoes f ON f.id = p.funcao_id
+	LEFT JOIN postos po ON po.id = p.posto_id
+	WHERE f.nome = 'Escalante'
+	ORDER BY p.nome_guerra ASC");
+$policiais_escalantes = $query->fetchAll(PDO::FETCH_ASSOC);
+
+//comandante precisa ser um oficial: postos QOPM/QOAPM (Cel, Ten Cel, Major, Capitão, Tenentes).
+//SubTen, Sargentos, Cabos e Soldados são PM, não entram nessa lista.
+//selecionado direto da lista de Policiais, sem precisar ter login no sistema
+$query = $pdo->query("SELECT p.id, p.nome_guerra, po.nome posto_nome FROM policiais p
+	INNER JOIN postos po ON po.id = p.posto_id
+	WHERE LOWER(po.nome) LIKE '%qopm' OR LOWER(po.nome) LIKE '%qoapm'
+	ORDER BY p.nome_guerra ASC");
+$policiais_comandantes = $query->fetchAll(PDO::FETCH_ASSOC);
+
 $id_escala = @$_GET['id'];
 $escala_existente = null;
 
@@ -76,8 +94,31 @@ if ($id_escala != "") {
 					</div>
 				</div>
 
+				<div class="row">
+					<div class="col-md-4 mb-2">
+						<label>Escalante</label>
+						<?php $escalante_atual = $escala_existente ? $escala_existente['escala']['escalante_policial_id'] : '' ?>
+						<select class="form-select" id="escalante_policial_id">
+							<option value="">Selecione</option>
+							<?php foreach ($policiais_escalantes as $p): ?>
+								<option value="<?php echo $p['id'] ?>" <?php echo $escalante_atual == $p['id'] ? 'selected' : '' ?>><?php echo htmlspecialchars(trim(($p['posto_nome'] ?? '') . ' ' . $p['nome_guerra'])) ?></option>
+							<?php endforeach; ?>
+						</select>
+					</div>
+					<div class="col-md-4 mb-2">
+						<label>Comandante</label>
+						<?php $comandante_atual = $escala_existente ? $escala_existente['escala']['comandante_policial_id'] : '' ?>
+						<select class="form-select" id="comandante_policial_id">
+							<option value="">Selecione</option>
+							<?php foreach ($policiais_comandantes as $p): ?>
+								<option value="<?php echo $p['id'] ?>" <?php echo $comandante_atual == $p['id'] ? 'selected' : '' ?>><?php echo htmlspecialchars($p['posto_nome'] . ' ' . $p['nome_guerra']) ?></option>
+							<?php endforeach; ?>
+						</select>
+					</div>
+				</div>
+
 				<p class="text-muted mb-0" style="font-size:12px">
-					A escala é sempre por dia: o mesmo Grupo cobre o Turno A e o Turno B do dia escolhido.
+					A escala é sempre por dia: o mesmo Grupo cobre o Turno A e o Turno B do dia escolhido. O Escalante e o Comandante selecionados aparecem no PDF como responsáveis pela assinatura; o registro só vira "assinado eletronicamente" quando a própria pessoa acessar o sistema e assinar.
 				</p>
 
 			</div>

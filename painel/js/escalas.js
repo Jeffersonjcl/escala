@@ -185,6 +185,55 @@ function removerEquipe(btn) {
 	atualizarSelectsAmbosTurnos();
 }
 
+// mesma ordem de precedência de funções usada na geração do PDF (gerar_pdf.php)
+var ORDEM_FUNCOES = {
+	'comandante': 1,
+	'comandante de equipe': 1,
+	'2º homem': 2,
+	'3º homem': 3,
+	'garupa': 4,
+	'atirador': 4,
+	'5º homem': 5,
+	'sub comandante': 6,
+	'subcomandante': 6,
+	'motorista': 7,
+	'piloto': 7,
+	'1º patrulheiro': 8,
+	'2º patrulheiro': 8,
+	'patrulheiro': 8,
+	'permanente': 9,
+	'sai': 10,
+	'auxiliar do p1': 11,
+	'auxiliar do p4': 12,
+	'escalante': 13,
+	'reserva de armamento': 14,
+	'rancheiro': 15
+};
+
+function ordenarMembros(equipeDiv) {
+	var tbody = equipeDiv.find('.membros-tbody');
+	var rows = tbody.find('.membro-row').get();
+
+	rows.sort(function(a, b) {
+		var funcaoA = $(a).find('td').eq(1).text().trim().toLowerCase();
+		var funcaoB = $(b).find('td').eq(1).text().trim().toLowerCase();
+		var rankA = ORDEM_FUNCOES[funcaoA] || 16;
+		var rankB = ORDEM_FUNCOES[funcaoB] || 16;
+
+		if (rankA !== rankB) {
+			return rankA - rankB;
+		}
+
+		var nomeA = $(a).find('td').eq(0).text().trim().toLowerCase();
+		var nomeB = $(b).find('td').eq(0).text().trim().toLowerCase();
+		return nomeA.localeCompare(nomeB);
+	});
+
+	rows.forEach(function(row) {
+		tbody.append(row);
+	});
+}
+
 function inserirLinhaMembro(equipeDiv, policial_id, nome_guerra, funcao_id, funcao_nome) {
 	var row = $('' +
 		'<tr class="membro-row" data-policial-id="' + policial_id + '" data-funcao-id="' + funcao_id + '">' +
@@ -193,6 +242,7 @@ function inserirLinhaMembro(equipeDiv, policial_id, nome_guerra, funcao_id, func
 		'  <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removerMembro(this)"><i class="fa fa-xmark"></i></button></td>' +
 		'</tr>');
 	equipeDiv.find('.membros-tbody').append(row);
+	ordenarMembros(equipeDiv);
 }
 
 function adicionarMembro(btn) {
@@ -287,6 +337,8 @@ function montarPayload() {
 		id: idEscalaAtual,
 		data_escala: $('#data_escala').val(),
 		grupo: $('#grupo_escala').val(),
+		escalante_policial_id: $('#escalante_policial_id').val(),
+		comandante_policial_id: $('#comandante_policial_id').val(),
 		equipes: equipes
 	};
 }
