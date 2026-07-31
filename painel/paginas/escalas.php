@@ -74,20 +74,52 @@ if ($id_escala != "") {
 			<div class="card-body">
 
 				<div class="row">
-					<div class="col-md-4 mb-2">
+					<div class="col-md-3 mb-2">
 						<label>Data da Escala</label>
 						<input type="date" class="form-control" id="data_escala" <?php echo $escala_existente ? 'readonly' : '' ?>>
 					</div>
-					<div class="col-md-4 mb-2">
+					<?php
+					$grupo_atual_partes = $escala_existente ? explode(',', $escala_existente['escala']['grupo']) : [];
+					$guardas = ['Guarda01', 'Guarda02', 'Guarda03', 'Guarda04'];
+					$grupo_atual_normal = '';
+					$guarda_atual = '';
+					$admin_atual = 'Não';
+					foreach ($grupo_atual_partes as $parte) {
+						if ($parte == 'Adm') {
+							$admin_atual = 'Sim';
+						} elseif (in_array($parte, $guardas, true)) {
+							$guarda_atual = $parte;
+						} else {
+							$grupo_atual_normal = $parte;
+						}
+					}
+					?>
+					<div class="col-md-2 mb-2">
 						<label>Grupo de Serviço</label>
-						<?php $grupo_atual = $escala_existente ? $escala_existente['escala']['grupo'] : '' ?>
 						<select class="form-select" id="grupo_escala" <?php echo $escala_existente ? 'disabled' : '' ?>>
-							<option value="" <?php echo $grupo_atual == '' ? 'selected' : '' ?>>Selecione</option>
-							<option value="Alpha" <?php echo $grupo_atual == 'Alpha' ? 'selected' : '' ?>>Alpha</option>
-							<option value="Bravo" <?php echo $grupo_atual == 'Bravo' ? 'selected' : '' ?>>Bravo</option>
+							<option value="" <?php echo $grupo_atual_normal == '' ? 'selected' : '' ?>>Selecione</option>
+							<option value="Alpha" <?php echo $grupo_atual_normal == 'Alpha' ? 'selected' : '' ?>>Alpha</option>
+							<option value="Bravo" <?php echo $grupo_atual_normal == 'Bravo' ? 'selected' : '' ?>>Bravo</option>
 						</select>
 					</div>
-					<div class="col-md-4 mb-2 d-flex align-items-end">
+					<div class="col-md-2 mb-2">
+						<label>Guarda</label>
+						<select class="form-select" id="guarda_escala" <?php echo $escala_existente ? 'disabled' : '' ?>>
+							<option value="" <?php echo $guarda_atual == '' ? 'selected' : '' ?>>Selecione</option>
+							<option value="Guarda01" <?php echo $guarda_atual == 'Guarda01' ? 'selected' : '' ?>>Guarda 01</option>
+							<option value="Guarda02" <?php echo $guarda_atual == 'Guarda02' ? 'selected' : '' ?>>Guarda 02</option>
+							<option value="Guarda03" <?php echo $guarda_atual == 'Guarda03' ? 'selected' : '' ?>>Guarda 03</option>
+							<option value="Guarda04" <?php echo $guarda_atual == 'Guarda04' ? 'selected' : '' ?>>Guarda 04</option>
+						</select>
+					</div>
+					<div class="col-md-2 mb-2">
+						<label>Incluir Administrativo?</label>
+						<select class="form-select" id="administrativo_escala" <?php echo $escala_existente ? 'disabled' : '' ?>>
+							<option value="Não" <?php echo $admin_atual == 'Não' ? 'selected' : '' ?>>Não</option>
+							<option value="Sim" <?php echo $admin_atual == 'Sim' ? 'selected' : '' ?>>Sim</option>
+						</select>
+					</div>
+					<div class="col-md-3 mb-2 d-flex align-items-end">
 						<button type="button" class="btn btn-primary" id="btn-carregar-efetivo" onclick="carregarEfetivoPronto()">
 							<i class="fa fa-magnifying-glass me-1"></i> Carregar Efetivo Pronto
 						</button>
@@ -118,7 +150,7 @@ if ($id_escala != "") {
 				</div>
 
 				<p class="text-muted mb-0" style="font-size:12px">
-					A escala é sempre por dia: o mesmo Grupo cobre o Turno A e o Turno B do dia escolhido. O Escalante e o Comandante selecionados aparecem no PDF como responsáveis pela assinatura; o registro só vira "assinado eletronicamente" quando a própria pessoa acessar o sistema e assinar.
+					A escala é sempre por dia: o(s) Grupo(s)/Guarda(s) selecionados cobrem o Turno A e o Turno B do dia escolhido. Você pode combinar um Grupo de Serviço, uma Guarda e/ou incluir o Administrativo (dias úteis) — o efetivo pronto trará os policiais de todos os selecionados. O Escalante e o Comandante selecionados aparecem no PDF como responsáveis pela assinatura; o registro só vira "assinado eletronicamente" quando a própria pessoa acessar o sistema e assinar.
 				</p>
 
 			</div>

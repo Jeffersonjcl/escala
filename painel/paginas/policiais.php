@@ -108,8 +108,13 @@ $postos_cadastrados = $query->fetchAll(PDO::FETCH_ASSOC);
 							<label>Grupo</label>
 							<select class="form-select" id="grupo" name="grupo">
 								<option value="">Sem Grupo (qualquer)</option>
+								<option value="Adm">Administrativo</option>
 								<option value="Alpha">Alpha</option>
 								<option value="Bravo">Bravo</option>
+								<option value="Guarda01">Guarda 01</option>
+								<option value="Guarda02">Guarda 02</option>
+								<option value="Guarda03">Guarda 03</option>
+								<option value="Guarda04">Guarda 04</option>
 							</select>
 						</div>
 
@@ -117,8 +122,10 @@ $postos_cadastrados = $query->fetchAll(PDO::FETCH_ASSOC);
 							<label>Turno Padrão</label>
 							<select class="form-select" id="turno_padrao" name="turno_padrao">
 								<option value="">Sem Turno (qualquer)</option>
+								<option value="Adm">Administrativo</option>
 								<option value="A">Turno A</option>
 								<option value="B">Turno B</option>
+								<option value="24H">Turno 24H</option>
 							</select>
 						</div>
 

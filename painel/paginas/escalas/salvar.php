@@ -32,8 +32,12 @@ if ($data_escala == "") {
 	responder('error', 'Informe a Data da Escala!');
 }
 
-if ($grupo == "" or !in_array($grupo, ['Alpha', 'Bravo'], true)) {
-	responder('error', 'Informe o Grupo de Serviço da Escala!');
+//grupo pode combinar um Grupo de Serviço e uma Guarda na mesma escala, ex: "Alpha,Guarda03"
+$grupos_validos = ['Adm', 'Alpha', 'Bravo', 'Guarda01', 'Guarda02', 'Guarda03', 'Guarda04'];
+$grupo_partes = $grupo !== '' ? explode(',', $grupo) : [];
+
+if (count($grupo_partes) == 0 or count(array_diff($grupo_partes, $grupos_validos)) > 0) {
+	responder('error', 'Informe o Grupo de Serviço e/ou a Guarda da Escala!');
 }
 
 //escalante precisa ter a função "Escalante" atribuída em Policiais

@@ -174,7 +174,11 @@ if ($linhas > 0) {
     <?php if ($mostrar_preloader == 'Sim') { ?>
         <!-- GLOBAL-LOADER -->
         <div id="global-loader">
-            <img src="../img/loader.gif" class="loader-img loader_mobile" alt="">
+            <div class="loader-img loader_mobile loader-raio">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path class="raio-bolt" d="M7 2v11h3v9l7-12h-4l4-8z"></path>
+                </svg>
+            </div>
         </div>
 
     <?php } ?>

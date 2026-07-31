@@ -134,12 +134,14 @@ $proximas_escalas = $query->fetchAll(PDO::FETCH_ASSOC);
 						</tr>
 					</thead>
 					<tbody>
-						<?php foreach ($proximas_escalas as $e) {
+						<?php
+						$labels_grupo = ['Adm' => 'Administrativo', 'Alpha' => 'Alpha', 'Bravo' => 'Bravo', 'Guarda01' => 'Guarda 01', 'Guarda02' => 'Guarda 02', 'Guarda03' => 'Guarda 03', 'Guarda04' => 'Guarda 04'];
+						foreach ($proximas_escalas as $e) {
 							$dataF = implode('/', array_reverse(explode('-', $e['data_escala'])));
 						?>
 							<tr>
 								<td><?php echo $dataF ?></td>
-								<td><?php echo $e['grupo'] ?></td>
+								<td><?php echo $labels_grupo[$e['grupo']] ?? $e['grupo'] ?></td>
 								<td><?php echo $e['total_membros'] ?> membro(s)</td>
 								<td><span class="badge <?php echo $e['status'] == 'Publicada' ? 'bg-success' : 'bg-secondary' ?>"><?php echo $e['status'] ?></span></td>
 								<td><?php echo $e['assinado_escalante'] ? '<i class="fa fa-check-circle text-success"></i>' : '<i class="fa fa-clock text-warning"></i>' ?></td>

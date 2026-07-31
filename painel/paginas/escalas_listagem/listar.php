@@ -42,10 +42,12 @@ HTML;
 	echo 'Nenhuma Escala encontrada nesse período!';
 }
 
+$labels_grupo = ['Adm' => 'Administrativo', 'Alpha' => 'Alpha', 'Bravo' => 'Bravo', 'Guarda01' => 'Guarda 01', 'Guarda02' => 'Guarda 02', 'Guarda03' => 'Guarda 03', 'Guarda04' => 'Guarda 04'];
+
 foreach ($res as $e) {
 	$id = $e['id'];
 	$dataF = implode('/', array_reverse(explode('-', $e['data_escala'])));
-	$grupo = $e['grupo'] ?: '-';
+	$grupo = $e['grupo'] ? ($labels_grupo[$e['grupo']] ?? $e['grupo']) : '-';
 	$status = $e['status'];
 	$total_equipes = $e['total_equipes'];
 	$total_membros = $e['total_membros'];

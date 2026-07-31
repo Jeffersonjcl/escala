@@ -5,35 +5,66 @@ $(document).ready(function() {
 	}
 });
 
+// pode combinar um Grupo de Serviço (Alpha/Bravo), uma Guarda (Guarda01-04) e o Administrativo na mesma escala
+function gruposEscalaSelecionados() {
+	var admin = $('#administrativo_escala').val() == 'Sim' ? 'Adm' : '';
+	return [$('#grupo_escala').val(), $('#guarda_escala').val(), admin].filter(function(v) {
+		return v != '';
+	});
+}
+
+// valor salvo em escalas_diarias.grupo, ex: "Alpha,Guarda03"
+function grupoEscalaSelecionado() {
+	return gruposEscalaSelecionados().join(',');
+}
+
 function carregarEfetivoPronto() {
 	var data_escala = $('#data_escala').val();
-	var grupo_escala = $('#grupo_escala').val();
+	var grupos = gruposEscalaSelecionados();
 
 	if (data_escala == "") {
 		alert('Selecione a Data antes de carregar o efetivo!');
 		return;
 	}
 
-	if (grupo_escala == "") {
-		alert('Selecione o Grupo de Serviço antes de carregar o efetivo!');
+	if (grupos.length == 0) {
+		alert('Selecione o Grupo de Serviço e/ou a Guarda antes de carregar o efetivo!');
 		return;
 	}
 
 	var turnos = ['A', 'B'];
 
 	var promessas = turnos.map(function(turno) {
-		return $.ajax({
-			url: 'paginas/escalas/buscar_efetivo_pronto.php',
-			method: 'POST',
-			data: {
-				data_escala: data_escala,
-				turno: turno,
-				grupo: grupo_escala,
-				id_escala: idEscalaAtual
-			},
-			dataType: 'json'
-		}).then(function(res) {
-			efetivoDisponivel[turno] = res;
+		var buscasDoTurno = grupos.map(function(grupo) {
+			return $.ajax({
+				url: 'paginas/escalas/buscar_efetivo_pronto.php',
+				method: 'POST',
+				data: {
+					data_escala: data_escala,
+					turno: turno,
+					grupo: grupo,
+					id_escala: idEscalaAtual
+				},
+				dataType: 'json'
+			});
+		});
+
+		return $.when.apply($, buscasDoTurno).then(function() {
+			// $.when com múltiplas promises entrega um array de [res, status, jqXHR] por chamada
+			var resultados = buscasDoTurno.length > 1 ? Array.prototype.slice.call(arguments).map(function(a) { return a[0]; }) : [arguments[0]];
+
+			var combinados = [];
+			var idsVistos = [];
+			resultados.forEach(function(res) {
+				res.forEach(function(p) {
+					if (idsVistos.indexOf(p.id) === -1) {
+						idsVistos.push(p.id);
+						combinados.push(p);
+					}
+				});
+			});
+
+			efetivoDisponivel[turno] = combinados;
 		});
 	});
 
@@ -76,6 +107,28 @@ function idsUsados() {
 	return usados;
 }
 
+var labelsGrupo = { 'Adm': 'Administrativo', 'Alpha': 'Alpha', 'Bravo': 'Bravo', 'Guarda01': 'Guarda 01', 'Guarda02': 'Guarda 02', 'Guarda03': 'Guarda 03', 'Guarda04': 'Guarda 04' };
+var labelsTurno = { 'Adm': 'Administrativo', 'A': 'Turno A', 'B': 'Turno B', '24H': 'Turno 24H' };
+
+// cor do nome no select conforme o grupo/turno do próprio policial (não o painel A/B que está
+// sendo exibido): Guarda e Administrativo pelo grupo; os demais pelo turno_padrao cadastrado
+var CORES_POLICIAL = {
+	turnoA: { cor: '#00008B', fundo: '#e8ecf9' },
+	turnoB: { cor: '#8B0000', fundo: '#f9e8e8' },
+	guarda: { cor: '#B25900', fundo: '#f9f0e2' },
+	administrativo: { cor: '#006400', fundo: '#e6f3e6' }
+};
+
+function corPolicial(p) {
+	if ((p.grupo && p.grupo.indexOf('Guarda') === 0) || p.turno_padrao === '24H') {
+		return CORES_POLICIAL.guarda;
+	}
+	if (p.grupo === 'Adm' || p.turno_padrao === 'Adm') {
+		return CORES_POLICIAL.administrativo;
+	}
+	return p.turno_padrao === 'B' ? CORES_POLICIAL.turnoB : CORES_POLICIAL.turnoA;
+}
+
 function montarOptionsPoliciais(turno, equipeDiv) {
 	var usados = idsUsados();
 	var select = equipeDiv.find('.select-policial');
@@ -85,19 +138,22 @@ function montarOptionsPoliciais(turno, equipeDiv) {
 
 	(efetivoDisponivel[turno] || []).forEach(function(p) {
 		if (usados.indexOf(parseInt(p.id)) === -1) {
-			var infoGrupo = (p.grupo || 'Sem grupo');
+			var infoGrupo = (p.grupo ? (labelsGrupo[p.grupo] || p.grupo) : 'Sem grupo');
 			if (p.turno_padrao) {
-				infoGrupo += ' - Turno ' + p.turno_padrao;
+				infoGrupo += ' - ' + (labelsTurno[p.turno_padrao] || ('Turno ' + p.turno_padrao));
 			}
 			if (parseInt(p.via_drso) === 1) {
 				infoGrupo += ' - DRSO';
 			}
-			select.append('<option value="' + p.id + '" data-funcao="' + p.funcao_id + '">' + p.nome_guerra + ' - ' + p.funcao_nome + ' (' + infoGrupo + ')</option>');
+			var cor = corPolicial(p);
+			select.append('<option value="' + p.id + '" data-funcao="' + p.funcao_id + '" style="color:' + cor.cor + ' !important; background-color:' + cor.fundo + ' !important">' + p.nome_guerra + ' - ' + p.funcao_nome + ' (' + infoGrupo + ')</option>');
 		}
 	});
 
-	if (atual) {
+	if (atual && select.find('option[value="' + atual + '"]').length > 0) {
 		select.val(atual);
+	} else {
+		select.val('');
 	}
 }
 
@@ -189,6 +245,9 @@ function removerEquipe(btn) {
 var ORDEM_FUNCOES = {
 	'comandante': 1,
 	'comandante de equipe': 1,
+	'comandante da guarda': 1,
+	'sentinela 01': 2,
+	'sentinela 02': 3,
 	'2º homem': 2,
 	'3º homem': 3,
 	'garupa': 4,
@@ -336,7 +395,7 @@ function montarPayload() {
 	return {
 		id: idEscalaAtual,
 		data_escala: $('#data_escala').val(),
-		grupo: $('#grupo_escala').val(),
+		grupo: grupoEscalaSelecionado(),
 		escalante_policial_id: $('#escalante_policial_id').val(),
 		comandante_policial_id: $('#comandante_policial_id').val(),
 		equipes: equipes
@@ -344,8 +403,8 @@ function montarPayload() {
 }
 
 function salvarEscala(statusDesejado) {
-	if ($('#grupo_escala').val() == "") {
-		alert('Selecione o Grupo de Serviço antes de salvar!');
+	if (grupoEscalaSelecionado() == "") {
+		alert('Selecione o Grupo de Serviço ou a Guarda antes de salvar!');
 		return;
 	}
 

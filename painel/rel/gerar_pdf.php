@@ -1,4 +1,7 @@
 <?php
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+
 require_once("../../conexao.php");
 require_once '../../dompdf/autoload.inc.php';
 
@@ -31,10 +34,19 @@ $dataF = implode('/', array_reverse(explode('-', $escala['data_escala'])));
 $dias_semana = ['SEGUNDA-FEIRA', 'TERÇA-FEIRA', 'QUARTA-FEIRA', 'QUINTA-FEIRA', 'SEXTA-FEIRA', 'SÁBADO', 'DOMINGO'];
 $dia_semana = $dias_semana[date('N', strtotime($escala['data_escala'])) - 1];
 
+$labels_grupo = ['Adm' => 'Administrativo', 'Alpha' => 'Alpha', 'Bravo' => 'Bravo', 'Guarda01' => 'Guarda 01', 'Guarda02' => 'Guarda 02', 'Guarda03' => 'Guarda 03', 'Guarda04' => 'Guarda 04'];
+
+//título mostra só o Grupo operacional (Alpha/Bravo); Guarda/Administrativo aparecem em seções próprias
+$grupo_partes_titulo = explode(',', $escala['grupo'] ?? '');
+$grupo_principal = array_values(array_intersect($grupo_partes_titulo, ['Alpha', 'Bravo']))[0] ?? ($grupo_partes_titulo[0] ?? '');
+
 //abreviações usadas nas colunas Função e Posto (padrão do documento oficial)
 $abrev_funcao = [
 	'comandante' => 'CMT',
 	'comandante de equipe' => 'CMT',
+	'comandante da guarda' => 'CMT',
+	'sentinela 01' => 'SENT 1',
+	'sentinela 02' => 'SENT 2',
 	'sub comandante' => 'SUB',
 	'subcomandante' => 'SUB',
 	'motorista' => 'MOT',
@@ -95,6 +107,21 @@ $abrev_posto_assinatura = [
 	'coronel qopm' => 'CEL'
 ];
 
+//reduz a fonte do nome quando ele for muito longo para caber em uma linha na caixa da equipe
+function tamanhoFonteNome($nome) {
+	$tam = mb_strlen($nome, 'UTF-8');
+	if ($tam > 34) {
+		return '5px';
+	}
+	if ($tam > 28) {
+		return '5.6px';
+	}
+	if ($tam > 22) {
+		return '6.3px';
+	}
+	return '7px';
+}
+
 function abreviar($nome, $mapa) {
 	$chave = mb_strtolower(trim($nome ?? ''), 'UTF-8');
 	if ($chave === '') {
@@ -120,6 +147,9 @@ $query_membros = $pdo->prepare("SELECT p.nome_guerra, p.matricula, p.telefone, p
 	WHERE em.equipe_id = :equipe_id ORDER BY CASE LOWER(f.nome)
 			WHEN 'comandante' THEN 1
 			WHEN 'comandante de equipe' THEN 1
+			WHEN 'comandante da guarda' THEN 1
+			WHEN 'sentinela 01' THEN 2
+			WHEN 'sentinela 02' THEN 3
 			WHEN '2º homem' THEN 2
 			WHEN '3º homem' THEN 3
 			WHEN 'garupa' THEN 4
@@ -142,17 +172,47 @@ $query_membros = $pdo->prepare("SELECT p.nome_guerra, p.matricula, p.telefone, p
 			ELSE 16
 		END, p.nome_guerra ASC");
 
+//equipes de Guarda e Administrativo têm escala diferente (24h / dias úteis) e saem
+//separadas das equipes normais de Turno A/B, identificadas pelo nome da equipe
+function classificarEquipe($equipe) {
+	$nome = mb_strtoupper($equipe['nome_equipe'] ?? '', 'UTF-8');
+	if (mb_strpos($nome, 'GUARDA') !== false) {
+		return 'Guarda';
+	}
+	if (mb_strpos($nome, 'ADM') !== false) {
+		return 'Administrativo';
+	}
+	return 'Normal';
+}
+
 //separa as equipes por turno já carregando os membros de cada uma
 $turnos = [];
+$equipes_guarda = [];
+$equipes_admin = [];
 foreach ($equipes as $equipe) {
 	$query_membros->bindValue(":equipe_id", $equipe['id']);
 	$query_membros->execute();
 	$equipe['membros'] = $query_membros->fetchAll(PDO::FETCH_ASSOC);
-	$turnos[$equipe['turno']][] = $equipe;
+
+	$categoria = classificarEquipe($equipe);
+	if ($categoria === 'Guarda') {
+		$equipes_guarda[] = $equipe;
+	} elseif ($categoria === 'Administrativo') {
+		$equipes_admin[] = $equipe;
+	} else {
+		$turnos[$equipe['turno']][] = $equipe;
+	}
 }
 
-function montarCaixaEquipe($equipe, $abrev_funcao, $abrev_posto) {
+//mesmo padrão de cor usado no select de Escalas: Turno A azul escuro, Turno B vermelho escuro,
+//Guarda laranja escuro, Administrativo verde escuro
+function corNomeTurno($turno) {
+	return $turno === 'B' ? '#8B0000' : '#00008B';
+}
+
+function montarCaixaEquipe($equipe, $abrev_funcao, $abrev_posto, $preencher_minimo = true, $cor_fixa = null) {
 	$titulo = mb_strtoupper($equipe['nome_equipe'], 'UTF-8');
+	$cor_nome = $cor_fixa ?? corNomeTurno($equipe['turno'] ?? '');
 
 	$info = [];
 	if (!empty($equipe['viatura'])) {
@@ -186,15 +246,18 @@ function montarCaixaEquipe($equipe, $abrev_funcao, $abrev_posto) {
 			<td class="c-func">' . htmlspecialchars(abreviar($m['funcao_nome'], $abrev_funcao)) . '</td>
 			<td class="c-posto">' . htmlspecialchars(abreviar($m['posto_nome'], $abrev_posto)) . '</td>
 			<td class="c-mat">' . htmlspecialchars($m['matricula'] ?? '') . '</td>
-			<td class="c-nome">' . htmlspecialchars($nome) . '</td>
+			<td class="c-nome" style="font-size:' . tamanhoFonteNome($nome) . '; color:' . $cor_nome . '">' . htmlspecialchars($nome) . '</td>
 		</tr>';
 		$total_linhas++;
 	}
 
-	//mantém todas as caixas com a mesma altura mínima (equipe padrão = 4 policiais)
-	while ($total_linhas < 4) {
-		$html .= '<tr><td class="c-func">&nbsp;</td><td class="c-posto">&nbsp;</td><td class="c-mat">&nbsp;</td><td class="c-nome">&nbsp;</td></tr>';
-		$total_linhas++;
+	//mantém todas as caixas com a mesma altura mínima (equipe padrão = 4 policiais);
+	//Guarda/Administrativo não seguem esse padrão de efetivo, então não recebem linhas em branco
+	if ($preencher_minimo) {
+		while ($total_linhas < 4) {
+			$html .= '<tr><td class="c-func">&nbsp;</td><td class="c-posto">&nbsp;</td><td class="c-mat">&nbsp;</td><td class="c-nome">&nbsp;</td></tr>';
+			$total_linhas++;
+		}
 	}
 
 	$html .= '</table>';
@@ -202,25 +265,27 @@ function montarCaixaEquipe($equipe, $abrev_funcao, $abrev_posto) {
 	return $html;
 }
 
-function montarCaixaResumo($turno, $equipes_turno) {
+function montarCaixaResumo($titulo, $equipes_turno, $apenas_efetivo = false, $rotulo_efetivo = 'EFETIVO OPERACIONAL') {
 	$qtd_equipes = count($equipes_turno);
 	$qtd_viaturas = 0;
 	$efetivo = 0;
 	foreach ($equipes_turno as $e) {
 		$efetivo += count($e['membros']);
-		if (!empty($e['viatura'])) {
+		if (mb_stripos(trim($e['nome_equipe'] ?? ''), 'VTR', 0, 'UTF-8') === 0) {
 			$qtd_viaturas++;
 		}
 	}
 
-	$linhas = [
-		'EFETIVO OPERACIONAL' => $efetivo,
+	$linhas = $apenas_efetivo ? [
+		$rotulo_efetivo => $efetivo
+	] : [
+		$rotulo_efetivo => $efetivo,
 		'QTD DE EQUIPES' => $qtd_equipes,
 		'QTD DE VIATURAS' => $qtd_viaturas
 	];
 
 	$html = '<table class="equipe">';
-	$html .= '<tr><td class="titulo" colspan="2">RESUMO TURNO ' . htmlspecialchars($turno) . '</td></tr>';
+	$html .= '<tr><td class="titulo" colspan="2">RESUMO ' . htmlspecialchars($titulo) . '</td></tr>';
 	foreach ($linhas as $rotulo => $valor) {
 		$html .= '<tr><td class="r-rotulo">' . $rotulo . ':</td><td class="r-valor">' . $valor . '</td></tr>';
 	}
@@ -323,19 +388,50 @@ function imagemCabecalho($arquivo) {
 $html_logo = imagemCabecalho($logo_rel);
 $html_logo2 = imagemCabecalho($logo_rel2);
 
-//uma página por turno, na ordem A e depois B
+//monta a seção separada de Guarda/Administrativo (escala diferente: 24h / dias úteis),
+//exibida logo após a grade de equipes normais do Turno A
+function montarSecaoEspecial($titulo, $equipes, $resumo_apenas_efetivo = false, $rotulo_efetivo = 'EFETIVO OPERACIONAL', $cor_fixa = null) {
+	if (empty($equipes)) {
+		return '';
+	}
+	global $abrev_funcao, $abrev_posto;
+
+	$caixas = [];
+	foreach ($equipes as $equipe) {
+		$caixas[] = montarCaixaEquipe($equipe, $abrev_funcao, $abrev_posto, false, $cor_fixa);
+	}
+	$caixas[] = montarCaixaResumo($titulo, $equipes, $resumo_apenas_efetivo, $rotulo_efetivo);
+
+	return '<div class="titulo-secao">' . htmlspecialchars($titulo) . '</div>' . montarGrade($caixas);
+}
+
+//uma página por turno, na ordem A e depois B; Guarda/Administrativo aparecem só uma vez,
+//na página do Turno A, logo após as equipes normais
 $paginas = '';
 $primeiro = true;
 foreach (['A', 'B'] as $turno) {
-	if (empty($turnos[$turno])) {
+	$tem_normais = !empty($turnos[$turno]);
+	$tem_especiais = ($turno === 'A') && (!empty($equipes_guarda) || !empty($equipes_admin));
+
+	if (!$tem_normais && !$tem_especiais) {
 		continue;
 	}
 
-	$caixas = [];
-	foreach ($turnos[$turno] as $equipe) {
-		$caixas[] = montarCaixaEquipe($equipe, $abrev_funcao, $abrev_posto);
+	$secao_normal = '';
+	if ($tem_normais) {
+		$caixas = [];
+		foreach ($turnos[$turno] as $equipe) {
+			$caixas[] = montarCaixaEquipe($equipe, $abrev_funcao, $abrev_posto);
+		}
+		$caixas[] = montarCaixaResumo('TURNO ' . $turno, $turnos[$turno]);
+		$secao_normal = montarGrade($caixas);
 	}
-	$caixas[] = montarCaixaResumo($turno, $turnos[$turno]);
+
+	$secao_especial = '';
+	if ($tem_especiais) {
+		$secao_especial .= montarSecaoEspecial('GUARDA DO QUARTEL', $equipes_guarda, true, 'EFETIVO DA GUARDA', '#B25900');
+		$secao_especial .= montarSecaoEspecial('ADMINISTRATIVO', $equipes_admin, true, 'EFETIVO ADMINISTRATIVO', '#006400');
+	}
 
 	$paginas .= '<div class="pagina' . ($primeiro ? '' : ' quebra') . '">
 		<table class="cabecalho">
@@ -344,7 +440,7 @@ foreach (['A', 'B'] as $turno) {
 				<td class="col-titulo">
 					<div class="orgao">POLÍCIA MILITAR DO CEARÁ</div>
 					<div class="unidade">' . htmlspecialchars($nome_sistema) . '</div>
-					<div class="documento">ESCALA DE SERVIÇO OPERACIONAL - GRUPO ' . htmlspecialchars(mb_strtoupper($escala['grupo'] ?? '', 'UTF-8')) . '</div>
+					<div class="documento">ESCALA DE SERVIÇO OPERACIONAL - GRUPO ' . htmlspecialchars(mb_strtoupper($labels_grupo[$grupo_principal] ?? $grupo_principal, 'UTF-8')) . '</div>
 				</td>
 				<td class="col-brasao">' . $html_logo2 . '</td>
 			</tr>
@@ -352,7 +448,9 @@ foreach (['A', 'B'] as $turno) {
 
 		<div class="faixa-data">' . $dia_semana . '  -  ' . $dataF . '  -  TURNO ' . $turno . '</div>
 
-		' . montarGrade($caixas) . '
+		' . $secao_normal . '
+
+		' . $secao_especial . '
 
 		' . $rodape . '
 	</div>';
@@ -382,6 +480,11 @@ $html_conteudo = '
 	.faixa-data {
 		background: #1f3864; color: #fff; font-weight: bold; font-size: 10px;
 		text-align: center; padding: 4px 0; margin: 8px 0 6px 0;
+	}
+
+	.titulo-secao {
+		background: #555555; color: #fff; font-weight: bold; font-size: 9px;
+		text-align: center; padding: 3px 0; margin: 10px 0 4px 0;
 	}
 
 	table.grade { width: 100%; border-collapse: separate; border-spacing: 4px; table-layout: fixed; }

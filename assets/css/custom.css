@@ -146,3 +146,34 @@ hr.separador {
 .font-size-11{
     font-size: 11px !important;
 }
+
+/* Loader "Raio" usado no #global-loader (painel/index.php) */
+.loader-raio svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    overflow: visible;
+}
+.loader-raio .raio-bolt {
+    fill: #B8860B;
+    transform-origin: center;
+    animation: raio-flash 1s ease-in-out infinite;
+}
+@keyframes raio-flash {
+    0%, 100% {
+        opacity: 0.4;
+        transform: scale(0.92);
+        filter: drop-shadow(0 0 2px #B8860B);
+    }
+    45% {
+        opacity: 1;
+        transform: scale(1.08);
+        filter: drop-shadow(0 0 16px #B8860B);
+    }
+    55% {
+        opacity: 0.7;
+        transform: scale(1.02);
+        filter: drop-shadow(0 0 6px #B8860B);
+    }
+}

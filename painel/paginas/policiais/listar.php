@@ -87,11 +87,14 @@ for ($i = 0; $i < $linhas; $i++) {
 	}
 	$numeral_js = htmlspecialchars($numeral ?? '', ENT_QUOTES);
 
-	$grupo_display = $grupo ?: '<span class="text-muted">Qualquer</span>';
+	$labels_grupo = ['Adm' => 'Administrativo', 'Alpha' => 'Alpha', 'Bravo' => 'Bravo', 'Guarda01' => 'Guarda 01', 'Guarda02' => 'Guarda 02', 'Guarda03' => 'Guarda 03', 'Guarda04' => 'Guarda 04'];
+	$labels_turno = ['Adm' => 'Administrativo', 'A' => 'Turno A', 'B' => 'Turno B', '24H' => 'Turno 24H'];
+
+	$grupo_display = $grupo ? ($labels_grupo[$grupo] ?? $grupo) : '<span class="text-muted">Qualquer</span>';
 	if ($drso) {
 		$grupo_display .= ' <span class="badge bg-secondary" title="Disponível para ser escalado em grupo diferente do seu">DRSO</span>';
 	}
-	$turno_display = $turno_padrao ? 'Turno ' . $turno_padrao : '<span class="text-muted">Qualquer</span>';
+	$turno_display = $turno_padrao ? ($labels_turno[$turno_padrao] ?? $turno_padrao) : '<span class="text-muted">Qualquer</span>';
 
 	echo <<<HTML
 <tr>
