@@ -324,9 +324,9 @@ function assinaturaBloco($assinado, $data, $nome_login, $nome_completo, $posto_n
 	//QOPM/QOAPM é só para oficiais (Cel, Ten Cel, Major, Capitão, 1º/2º Ten); SubTen, Sgt, Cabo e Soldado são PM
 	//o quadro exibido (QOPM ou QOAPM) segue o posto cadastrado do policial, não é fixo
 	$posto_chave = mb_strtolower(trim($posto_nome ?? ''), 'UTF-8');
-	if (str_ends_with($posto_chave, 'qoapm')) {
+	if (substr($posto_chave, -5) === 'qoapm') {
 		$quadro = 'QOAPM';
-	} elseif (str_ends_with($posto_chave, 'qopm')) {
+	} elseif (substr($posto_chave, -4) === 'qopm') {
 		$quadro = 'QOPM';
 	} else {
 		$quadro = 'PM';
