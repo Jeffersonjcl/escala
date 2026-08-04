@@ -130,7 +130,7 @@ if ($id_escala != "") {
 					<div class="col-md-4 mb-2">
 						<label>Escalante</label>
 						<?php $escalante_atual = $escala_existente ? $escala_existente['escala']['escalante_policial_id'] : '' ?>
-						<select class="form-select" id="escalante_policial_id">
+						<select class="form-select sel2-busca" id="escalante_policial_id">
 							<option value="">Selecione</option>
 							<?php foreach ($policiais_escalantes as $p): ?>
 								<option value="<?php echo $p['id'] ?>" <?php echo $escalante_atual == $p['id'] ? 'selected' : '' ?>><?php echo htmlspecialchars(trim(($p['posto_nome'] ?? '') . ' ' . $p['nome_guerra'])) ?></option>
@@ -140,7 +140,7 @@ if ($id_escala != "") {
 					<div class="col-md-4 mb-2">
 						<label>Comandante</label>
 						<?php $comandante_atual = $escala_existente ? $escala_existente['escala']['comandante_policial_id'] : '' ?>
-						<select class="form-select" id="comandante_policial_id">
+						<select class="form-select sel2-busca" id="comandante_policial_id">
 							<option value="">Selecione</option>
 							<?php foreach ($policiais_comandantes as $p): ?>
 								<option value="<?php echo $p['id'] ?>" <?php echo $comandante_atual == $p['id'] ? 'selected' : '' ?>><?php echo htmlspecialchars($p['posto_nome'] . ' ' . $p['nome_guerra']) ?></option>

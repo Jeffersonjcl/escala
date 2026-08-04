@@ -3,7 +3,6 @@ require_once("../conexao.php");
 @session_start();
 $id_usuario = $_SESSION['id'];
 
-
 $home = 'ocultar';
 $configuracoes = 'ocultar';
 

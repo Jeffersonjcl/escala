@@ -1,9 +1,33 @@
 $(document).ready(function() {
+	initSel2($('#escalante_policial_id'));
+	initSel2($('#comandante_policial_id'));
+
 	if (escalaExistente) {
 		$('#data_escala').val(escalaExistente.escala.data_escala);
 		carregarEfetivoPronto();
 	}
 });
+
+// select2 permite digitar para filtrar as opções, essencial nos selects de Policial
+// que costumam ter dezenas/centenas de itens; reaplica quando as options mudam
+function initSel2(select, opcoesExtras) {
+	if (select.hasClass('select2-hidden-accessible')) {
+		select.select2('destroy');
+	}
+	select.select2($.extend({
+		width: '100%',
+		placeholder: select.find('option').first().text() || 'Selecione',
+		allowClear: true,
+		language: {
+			noResults: function() {
+				return 'Nenhum resultado encontrado';
+			},
+			searching: function() {
+				return 'Buscando...';
+			}
+		}
+	}, opcoesExtras || {}));
+}
 
 // pode combinar um Grupo de Serviço (Alpha/Bravo), uma Guarda (Guarda01-04) e o Administrativo na mesma escala
 function gruposEscalaSelecionados() {
@@ -146,7 +170,7 @@ function montarOptionsPoliciais(turno, equipeDiv) {
 				infoGrupo += ' - DRSO';
 			}
 			var cor = corPolicial(p);
-			select.append('<option value="' + p.id + '" data-funcao="' + p.funcao_id + '" style="color:' + cor.cor + ' !important; background-color:' + cor.fundo + ' !important">' + p.nome_guerra + ' - ' + p.funcao_nome + ' (' + infoGrupo + ')</option>');
+			select.append('<option value="' + p.id + '" data-funcao="' + p.funcao_id + '" data-color="' + cor.cor + '" data-bg="' + cor.fundo + '" style="color:' + cor.cor + ' !important; background-color:' + cor.fundo + ' !important">' + p.nome_guerra + ' - ' + p.funcao_nome + ' (' + infoGrupo + ')</option>');
 		}
 	});
 
@@ -155,14 +179,45 @@ function montarOptionsPoliciais(turno, equipeDiv) {
 	} else {
 		select.val('');
 	}
+
+	initSel2(select, {
+		templateResult: formatarOpcaoPolicialColorida,
+		templateSelection: formatarOpcaoPolicialColorida
+	});
+}
+
+function escapeHtml(texto) {
+	return $('<div>').text(texto).html();
+}
+
+// o select2 não herda o style inline das <option> originais, então repinta
+// cada item conforme a cor/fundo salvos em data-color/data-bg (ver corPolicial)
+function formatarOpcaoPolicialColorida(state) {
+	if (!state.id) {
+		return state.text;
+	}
+	var opt = $(state.element);
+	var cor = opt.attr('data-color');
+	var fundo = opt.attr('data-bg');
+	if (!cor) {
+		return state.text;
+	}
+	return $('<span style="display:block;color:' + cor + ' !important;background-color:' + fundo + ' !important;padding:2px 6px;border-radius:3px;">' + escapeHtml(state.text) + '</span>');
 }
 
 function montarOptionsFuncoes(equipeDiv) {
 	var select = equipeDiv.find('.select-funcao');
+	var atual = select.val();
 	select.empty();
 	funcoesCadastradas.forEach(function(f) {
 		select.append('<option value="' + f.id + '">' + f.nome + '</option>');
 	});
+
+	if (atual && select.find('option[value="' + atual + '"]').length > 0) {
+		select.val(atual);
+	}
+
+	initSel2(select, { width: '220px' });
 }
 
 function atualizarSelectsPoliciais(turno) {
@@ -213,8 +268,8 @@ function adicionarEquipe(turno, nome, viatura, membros, horario_inicio, horario_
 		'      <tbody class="membros-tbody"></tbody>' +
 		'    </table>' +
 		'    <div class="d-flex gap-2">' +
-		'      <select class="form-select form-select-sm select-policial"></select>' +
-		'      <select class="form-select form-select-sm select-funcao" style="max-width:220px"></select>' +
+		'      <select class="form-select form-select-sm select-policial sel2-busca"></select>' +
+		'      <select class="form-select form-select-sm select-funcao"></select>' +
 		'      <button type="button" class="btn btn-sm btn-success" onclick="adicionarMembro(this)">Adicionar</button>' +
 		'    </div>' +
 		'    <div class="aviso-equipe small mt-2"></div>' +
