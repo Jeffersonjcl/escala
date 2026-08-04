@@ -160,8 +160,8 @@ $query_membros = $pdo->prepare("SELECT p.nome_guerra, p.matricula, p.telefone, p
 			WHEN 'motorista' THEN 7
 			WHEN 'piloto' THEN 7
 			WHEN '1º patrulheiro' THEN 8
-			WHEN '2º patrulheiro' THEN 8
-			WHEN 'patrulheiro' THEN 8
+			WHEN '2º patrulheiro' THEN 9
+			WHEN 'patrulheiro' THEN 9
 			WHEN 'permanente' THEN 9
 			WHEN 'sai' THEN 10
 			WHEN 'auxiliar do p1' THEN 11
@@ -245,7 +245,7 @@ function montarCaixaEquipe($equipe, $abrev_funcao, $abrev_posto, $preencher_mini
 		$html .= '<tr>
 			<td class="c-func">' . htmlspecialchars(abreviar($m['funcao_nome'], $abrev_funcao)) . '</td>
 			<td class="c-posto">' . htmlspecialchars(abreviar($m['posto_nome'], $abrev_posto)) . '</td>
-			<td class="c-mat">' . htmlspecialchars($m['matricula'] ?? '') . '</td>
+			<td class="c-mat">' . htmlspecialchars($m['numeral'] ?: '-') . '</td>
 			<td class="c-nome" style="font-size:' . tamanhoFonteNome($nome) . '; color:' . $cor_nome . '">' . htmlspecialchars($nome) . '</td>
 		</tr>';
 		$total_linhas++;
@@ -490,12 +490,12 @@ $html_conteudo = '
 	table.grade { width: 100%; border-collapse: separate; border-spacing: 4px; table-layout: fixed; }
 	td.celula { width: 33.33%; vertical-align: top; padding: 0; }
 
-	table.equipe { width: 100%; border-collapse: collapse; table-layout: fixed; }
-	table.equipe td { border: 0.6pt solid #808080; padding: 2px 3px; font-size: 7px; }
+	table.equipe { width: 100%; border-collapse: collapse; table-layout: fixed; border: 0.6pt solid #808080; }
+	table.equipe td { border: none; padding: 2px 3px; font-size: 7px; }
 
 	table.equipe td.titulo {
 		background: #1f3864; color: #fff; font-weight: bold; font-size: 9px;
-		text-align: center; padding: 3px 2px; border-color: #1f3864;
+		text-align: center; padding: 3px 2px;
 	}
 	table.equipe td.info {
 		background: #dce6f1; font-size: 6.5px; text-align: center; font-weight: bold;
